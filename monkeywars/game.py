@@ -13,26 +13,12 @@ import utils
 class Game:
 	def __init__(self, graphic_mode=True):
 		self.graphic_mode = graphic_mode
-		self.players = []
-		self.bullets = {}
-		self.last_shoot = {}
 
 		self._build()
 
 	def _initialize_board(self):
-		self._player1_box = pygame.Rect(0, 0, WIDTH/2, HEIGHT)
-		self._player2_box = pygame.Rect(WIDTH/2, 0, WIDTH/2, HEIGHT)
-
-
-
-	def _initialize_players(self):
-		self.players.append(Player(self._player1_box.center, 0, self._player1_box, graphic_mode = self.graphic_mode))
-		self.players.append(Player(self._player2_box.center, 180, self._player2_box, graphic_mode = self.graphic_mode))
-
-		for p in self.players:
-			self.bullets[p] = set()
-
-			self.last_shoot[p] = 0
+		self._player1_box = pygame.Rect(0, 0, WIDTH/3, HEIGHT)
+		self._player2_box = pygame.Rect(WIDTH/2 + WIDTH/6, 0, WIDTH/3, HEIGHT)
 
 
 	def _initialize_graphic(self):
@@ -41,10 +27,22 @@ class Game:
 
 		return screen
 
+	def _initialize_variables(self):
+		self.players = []
+		self.bullets = {}
+		self.last_shoot = {}
+
+		self.players.append(Player(self._player1_box.center, 0, self._player1_box, graphic_mode = self.graphic_mode))
+		self.players.append(Player(self._player2_box.center, 180, self._player2_box, graphic_mode = self.graphic_mode))
+
+		for p in self.players:
+			self.bullets[p] = set()
+
+			self.last_shoot[p] = 0
 
 	def _build(self):
 		self._initialize_board()
-		self._initialize_players()
+		self._initialize_variables()
 
 		if self.graphic_mode:
 			self.screen = self._initialize_graphic()
@@ -52,15 +50,21 @@ class Game:
 	def _clear_screen(self):
 		self.screen.fill(BACKGROUND_COLOR)
 
-		pygame.draw.line(self.screen, (0,0,0), (WIDTH/2,0), (WIDTH/2, HEIGHT), 2)
+		pygame.draw.line(self.screen, (0,0,0), (WIDTH/3,0), (WIDTH/3, HEIGHT), 2)
+		pygame.draw.line(self.screen, (0,0,0), (2*WIDTH/3,0), (2*WIDTH/3, HEIGHT), 2)
 
 
+	def random_restart(self):
+		self._initialize_variables()
+
+		for p in self.players:
+			p.set_position_angle(utils.random_position_in_boundary(p.boundary), random.choice([i for i in range(0, 360, ROTATION_STEP)]))
 
 
 	def step(self, actions):
 		rewards = {p:0 for p in self.players}
 		observations = {p:[] for p in self.players}
-		action_space = {p:list(Actions) for p in self.players}
+		action_space = {p:[] for p in self.players}
 		done = False
 
 		for p,a in zip(self.players, actions):
@@ -94,24 +98,36 @@ class Game:
 
 		for p in self.players:
 			for b in list(self.bullets[p]):
-				if utils.is_outside(b.get_pos(), (0, 0, WIDTH, HEIGHT)):
-					self.bullets[p].remove(b)
-
 				for p2 in self.players:
 					if p!=p2 and utils.player_hit_by_bullet(p2, b):
 						# Player p2 is hit by player p
 						self.bullets[p].remove(b)
 
 						# Add a reward point to player p
-						rewards[p] += 1
-						rewards[p2] -= 1
+						rewards[p] += REWARD_POSITIVE
+						rewards[p2] += REWARD_NEGATIVE
+						done = True
+		
+		for p in self.players:
+			for b in list(self.bullets[p]):
+				if utils.is_outside(b.get_pos(), (0, 0, WIDTH, HEIGHT)):
+					self.bullets[p].remove(b)
 
 		for p in self.players:
 			self.last_shoot[p] += 1
 			if self.last_shoot[p] >= FIRE_DELAY:
 				observations[p].append(Observation.FIRE_READY)
 
-		return [(observations[p], rewards[p], done, action_space[p]) for p in self.players]
+		for p in self.players:
+			action_space[p].append(Actions.ROTATE_CLOCKWISE)
+			action_space[p].append(Actions.PASS)
+			action_space[p].append(Actions.ROTATE_COUNTERCLOCKWISE)
+			if self.last_shoot[p] >= FIRE_DELAY:
+				action_space[p].append(Actions.FIRE)
+			if Observation.WALL not in observations[p]:
+				action_space[p].append(Actions.MOVE)
+
+		return [(tuple(observations[p]), rewards[p], done, action_space[p]) for p in self.players]
 
 	def render(self):
 		if not self.graphic_mode:
@@ -127,6 +143,7 @@ class Game:
 
 			for b in self.bullets[p]:
 				b.draw(self.screen)
+
 
 		pygame.display.flip()
 

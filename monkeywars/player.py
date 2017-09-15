@@ -25,9 +25,7 @@ class Player:
 			return
 
 		self.rect.center = self.pos
-
-		self.direction = math.cos(utils.to_radians(self.angle)), math.sin(utils.to_radians(self.angle))
-
+		
 		rotated_image = pygame.transform.rotate(self.image, -self.angle)
 		if self.direction[0] < 0:
 			rotated_image = pygame.transform.flip(rotated_image, True, True)
@@ -63,6 +61,8 @@ class Player:
 			self.angle -= 360
 		if self.angle < -360:
 			self.angle += 360
+
+		self.direction = math.cos(utils.to_radians(self.angle)), math.sin(utils.to_radians(self.angle))
 
 	def rotate_clockwise(self, amount):
 		self.rotate_counterclockwise(-amount)
@@ -111,6 +111,11 @@ class Player:
 		return utils.is_outside((self.pos[0] + self.direction[0]*WALL_SENSITIVITY, self.pos[1] + self.direction[1]*WALL_SENSITIVITY), self.boundary)
 
 
+	def set_position_angle(self, new_position, new_angle):
+		self.pos = new_position
+		self.angle = new_angle
+
+		self.direction = math.cos(utils.to_radians(self.angle)), math.sin(utils.to_radians(self.angle))
 
 
 

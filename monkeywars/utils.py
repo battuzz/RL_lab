@@ -1,5 +1,15 @@
 import math
 import pygame
+import random
+
+def random_position_in_boundary(boundary):
+	x = random.randint(boundary[0], boundary[0] + boundary[2])
+	y = random.randint(boundary[1], boundary[1] + boundary[3])
+
+	return (x,y)
+
+def default_dict_initializer():
+	return random.random()/2
 
 def is_outside(pos, box):
 	return  pos[0] < box[0] 		or \
@@ -40,7 +50,7 @@ def get_angle(v):
 		angle = math.atan(v[1] / v[0])
 		if v[0] < 0:
 			angle += math.pi
-	except ValueError:
+	except ZeroDivisionError:
 		angle = math.pi/2 if v[1] > 0 else -math.pi/2
 
 	return to_degrees(angle)
