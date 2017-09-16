@@ -21,6 +21,10 @@ class Agent:
 			print("Could not load previous file")
 
 
+class StillAgent(Agent):
+	def act(self, observation, reward, done, action_space):
+		return Actions.PASS
+
 class RandomAgent(Agent):
 	def act(self, observation, reward, done, action_space):
 		return random.choice(action_space)
@@ -70,11 +74,11 @@ class EscapeAgent(Agent):
 		return ret
 
 class SARSALearningAgent(Agent):
-	def __init__(self, learn = True):
+	def __init__(self, policy, learn = True):
 		super().__init__()
 
 		self.learn = learn
-		self.sarsa = SARSA()
+		self.sarsa = SARSA(policy)
 		self.previous_state = None
 
 	def act(self, observation, reward, done, action_space):
@@ -105,23 +109,20 @@ class SARSALearningAgent(Agent):
 	# 		pass
 
 class QLearningAgent(Agent):
-	def __init__(self, learn = True):
+	def __init__(self, policy, learn = True):
 		super().__init__()
 
 		self.learn = learn
-		self.Q = Q_Learning()
+		self.Q = Q_Learning(policy)
 		self.previous_state = None
 
 	def act(self, observation, reward, done, action_space):
-		if not self.learn:
-			return self.Q.next_action(observation, action_space)
-
 		if self.previous_state is None:
 			self.previous_action = random.choice(action_space)
 		else:
 			new_action = self.Q.next_action(observation, action_space)
 			if self.learn:
-				self.Q.learn(self.previous_state, self.previous_action, reward, observation)
+				self.Q.learn(self.previous_state, self.previous_action, reward, observation, action_space)
 			self.previous_action = new_action
 
 		self.previous_state = observation
