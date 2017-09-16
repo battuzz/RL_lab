@@ -68,7 +68,7 @@ class Player:
 		self.rotate_counterclockwise(-amount)
 
 	def fire(self):
-		return Bullet(self.pos, self.direction)
+		return Bullet(self.pos, self.direction, self.graphic_mode)
 
 	def get_pos(self):
 		return self.pos
@@ -80,6 +80,9 @@ class Player:
 	def is_opponent_in_range(self, opponent):
 		opponent_position = opponent.get_pos()
 		opponent_angle = utils.get_angle((opponent_position[0] - self.pos[0], opponent_position[1] - self.pos[1]))
+
+		assert 0 <= opponent_angle <= 360
+		assert 0 <= self.angle <= 360
 
 		if self.angle - INNER_FIELD_ANGLE/2 < opponent_angle < self.angle + INNER_FIELD_ANGLE/2:
 			return Observation.ENEMY_INNER_SIGHT

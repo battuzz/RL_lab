@@ -39,6 +39,13 @@ def to_degrees(angle):
 def to_radians(angle):
 	return angle / 180.0 * math.pi;
 
+def normalize_angle(angle):
+	while angle < 0:
+		angle += 360
+	while angle >= 360:
+		angle -= 360
+	return angle
+
 def player_hit_by_bullet(player, bullet):
 	return get_distance(player.get_pos(), bullet.get_pos()) < (bullet.get_radius() + player.get_radius())
 
@@ -53,4 +60,4 @@ def get_angle(v):
 	except ZeroDivisionError:
 		angle = math.pi/2 if v[1] > 0 else -math.pi/2
 
-	return to_degrees(angle)
+	return normalize_angle(to_degrees(angle))
