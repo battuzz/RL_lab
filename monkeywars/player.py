@@ -11,7 +11,7 @@ class Player:
 		self.boundary = boundary
 		self.radius = radius
 		self.graphic_mode = graphic_mode
-		self.angle = angle
+		self.angle = utils.normalize_angle(angle)
 		self.direction = math.cos(utils.to_radians(self.angle)), math.sin(utils.to_radians(self.angle))
 
 		if self.graphic_mode:
@@ -56,11 +56,7 @@ class Player:
 				self.pos = utils.repositionate_inside_border(self.pos, self.boundary)
 
 	def rotate_counterclockwise(self, amount):
-		self.angle -= amount
-		if self.angle > 360:
-			self.angle -= 360
-		if self.angle < 0:
-			self.angle += 360
+		self.angle = utils.normalize_angle(self.angle - amount)
 
 		self.direction = math.cos(utils.to_radians(self.angle)), math.sin(utils.to_radians(self.angle))
 
@@ -68,7 +64,7 @@ class Player:
 		self.rotate_counterclockwise(-amount)
 
 	def fire(self):
-		return Bullet(self.pos, self.direction, self.graphic_mode)
+		return Bullet(self.pos, self.direction, graphic_mode=self.graphic_mode)
 
 	def get_pos(self):
 		return self.pos
@@ -81,8 +77,8 @@ class Player:
 		opponent_position = opponent.get_pos()
 		opponent_angle = utils.get_angle((opponent_position[0] - self.pos[0], opponent_position[1] - self.pos[1]))
 
-		assert 0 <= opponent_angle <= 360
-		assert 0 <= self.angle <= 360
+		assert 0 <= opponent_angle < 360
+		assert 0 <= self.angle < 360
 
 		if self.angle - INNER_FIELD_ANGLE/2 < opponent_angle < self.angle + INNER_FIELD_ANGLE/2:
 			return Observation.ENEMY_INNER_SIGHT
@@ -116,7 +112,7 @@ class Player:
 
 	def set_position_angle(self, new_position, new_angle):
 		self.pos = new_position
-		self.angle = new_angle
+		self.angle = utils.normalize_angle(new_angle)
 
 		self.direction = math.cos(utils.to_radians(self.angle)), math.sin(utils.to_radians(self.angle))
 
