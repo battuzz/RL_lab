@@ -76,17 +76,18 @@ class Player:
 	def is_opponent_in_range(self, opponent):
 		opponent_position = opponent.get_pos()
 		opponent_angle = utils.get_angle((opponent_position[0] - self.pos[0], opponent_position[1] - self.pos[1]))
+		angle_diff = utils.angle_distance(self.angle, opponent_angle)
 
 		assert 0 <= opponent_angle < 360
 		assert 0 <= self.angle < 360
 
-		if self.angle - INNER_FIELD_ANGLE/2 < opponent_angle < self.angle + INNER_FIELD_ANGLE/2:
+		if abs(angle_diff) <= INNER_FIELD_ANGLE:
 			return Observation.ENEMY_INNER_SIGHT
 
-		elif self.angle - OUTER_FIELD_ANGLE/2 < opponent_angle < self.angle:
+		elif angle_diff >= 0 and angle_diff <= OUTER_FIELD_ANGLE/2:
 			return Observation.ENEMY_OUTER_LEFT_SIGHT
 
-		elif self.angle < opponent_angle < self.angle + OUTER_FIELD_ANGLE/2:
+		elif angle_diff < 0 and angle_diff >= -OUTER_FIELD_ANGLE/2:
 			return Observation.ENEMY_OUTER_RIGHT_SIGHT
 
 		return Observation.ENEMY_NOT_SIGHT
@@ -94,14 +95,15 @@ class Player:
 	def is_bullet_in_range(self, bullet):
 		bullet_position = bullet.get_pos()
 		bullet_angle = utils.get_angle((bullet_position[0] - self.pos[0], bullet_position[1] - self.pos[1]))
+		angle_diff = utils.angle_distance(self.angle, bullet_angle)
 
-		if self.angle - INNER_FIELD_ANGLE/2 < bullet_angle < self.angle + INNER_FIELD_ANGLE/2:
+		if abs(angle_diff) <= INNER_FIELD_ANGLE:
 			return Observation.BULLET_INNER_SIGHT
 
-		elif self.angle - OUTER_FIELD_ANGLE/2 < bullet_angle < self.angle:
+		elif angle_diff >= 0 and angle_diff <= OUTER_FIELD_ANGLE/2:
 			return Observation.BULLET_OUTER_LEFT_SIGHT
 
-		elif self.angle < bullet_angle < self.angle + OUTER_FIELD_ANGLE/2:
+		elif angle_diff < 0 and angle_diff >= -OUTER_FIELD_ANGLE/2:
 			return Observation.BULLET_OUTER_RIGHT_SIGHT
 
 		return Observation.BULLET_NOT_SIGHT

@@ -61,3 +61,9 @@ def get_angle(v):
 		angle = math.pi/2 if v[1] > 0 else -math.pi/2
 
 	return normalize_angle(to_degrees(angle))
+
+def angle_distance(sourceA, targetA):
+	""" Distance from a1 to a2, in degrees """
+	radT = to_radians(targetA)
+	radS = to_radians(sourceA)
+	return to_degrees(math.atan2(math.sin(radT - radS), math.cos(radT - radS)))

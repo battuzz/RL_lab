@@ -76,6 +76,9 @@ class Game:
 		for p,a in zip(self.players, actions):
 			if a is Actions.MOVE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE:
 				p.move(MOVE_STEP)
+
+			elif a is Actions.MOVE_BACK:
+				p.move(-MOVE_STEP)
 			
 			elif a is Actions.ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE:
 				p.rotate_clockwise(ROTATION_STEP)
@@ -144,6 +147,7 @@ class Game:
 			action_space[p].append(Actions.PASS)
 			action_space[p].append(Actions.ROTATE_COUNTERCLOCKWISE)
 			action_space[p].append(Actions.MOVE)
+			action_space[p].append(Actions.MOVE_BACK)
 			action_space[p].append(Actions.MOVE_AND_ROTATE_CLOCKWISE)
 			action_space[p].append(Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE)
 			if self.last_shoot[p] >= FIRE_DELAY:

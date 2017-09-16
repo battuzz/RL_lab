@@ -9,8 +9,8 @@ from algorithms import *
 def main(render = True):
 	game = Game(render)
 
-	shooter = RandomAgent()
-	escaper = Agent.load_from_state("Q3.model")
+	shooter = ShooterAgent()
+	escaper = Agent.load_from_state("M.model")
 	if escaper == None:
 		escaper = SARSALearningAgent(GLIELinearPolicy(0.5, 0.01, 0.000005))
 
@@ -45,7 +45,7 @@ def main(render = True):
 		avg_max_rew_2 = avg_max_rew_2 * ((num_ep-1)/num_ep) + cum_reward_2/num_ep
 		print(str(avg_max_rew_1) + "," + str(avg_max_rew_2))
 		#shooter.save_state("SARSA3.model")
-		escaper.save_state("Q3.model")
+		escaper.save_state("M.model")
 
 		#time.sleep(0.1)
 
