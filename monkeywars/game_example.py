@@ -21,6 +21,7 @@ def main(render = True):
 		game.random_restart()
 		cum_reward_1 = 0
 		cum_reward_2 = 0
+		print("\n\nSTART MATCH\n\n")
 		while not game_ended:
 			it += 1
 			if it % 100 == 0:
