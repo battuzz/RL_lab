@@ -11,26 +11,32 @@ class EGreedyPolicy():
 
 	def sample_action(self, state, Q, action_space):
 		if random.random() < self.epsilon:
-			return random.choice(action_space)
+			return (0, random.choice(action_space))
 		else:
-			return max([(Q[state,a],a) for a in action_space])[1]
+			return max([(Q[state,a],a) for a in action_space])
 
 
 class SARSA():
 	def __init__(self):
 		self.Q = collections.defaultdict(utils.default_dict_initializer)
-		self.policy = EGreedyPolicy(0.3)
+		self.epsilon = 0.01
+		self.alpha = 0.1
+		self.gamma = 0.3
+		self.policy = EGreedyPolicy(self.epsilon)
 		self.it = 1
-		self.alpha = 0.5
-		self.gamma = 0.1
 
 	def learn(self, state, action, reward, next_state, next_action):
 		self.Q[state, action] = self.Q[state, action] + self.alpha * (reward + self.gamma * self.Q[next_state,next_action] - self.Q[state, action])
 		self.it += 1
+		if self.it % 100 == 0:
+			print("Size of Q: " + str(len(self.Q)))
 
 	def next_action(self, state, action_space):
 		# Find action with e-greedy policy or that arg max a Q(s,a)
-		return self.policy.sample_action(state, self.Q, action_space)
+		qa =  self.policy.sample_action(state, self.Q, action_space)
+		if self.it % 100 == 0:
+			print("Best Q value: " + str(qa[0]) + " for action " + str(qa[1]))
+		return qa[1]
 
 class Q_Learning():
 	def __init__(self):

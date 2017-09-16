@@ -56,10 +56,10 @@ class Player:
 				self.pos = utils.repositionate_inside_border(self.pos, self.boundary)
 
 	def rotate_counterclockwise(self, amount):
-		self.angle += amount
+		self.angle -= amount
 		if self.angle > 360:
 			self.angle -= 360
-		if self.angle < -360:
+		if self.angle < 0:
 			self.angle += 360
 
 		self.direction = math.cos(utils.to_radians(self.angle)), math.sin(utils.to_radians(self.angle))

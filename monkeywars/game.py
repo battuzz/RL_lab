@@ -16,21 +16,25 @@ class Game:
 
 		self._build()
 
+
+	def _build(self):
+		self._initialize_board()
+		self._initialize_variables()
+
+		if self.graphic_mode:
+			self.screen = self._initialize_graphic()
+
+
 	def _initialize_board(self):
-		self._player1_box = pygame.Rect(0, 0, WIDTH/3, HEIGHT)
-		self._player2_box = pygame.Rect(WIDTH/2 + WIDTH/6, 0, WIDTH/3, HEIGHT)
+		self._player1_box = pygame.Rect(0, 0, WIDTH*BOX_PROPORTION, HEIGHT)
+		self._player2_box = pygame.Rect(WIDTH*(1-BOX_PROPORTION), 0, WIDTH*BOX_PROPORTION, HEIGHT)
 
-
-	def _initialize_graphic(self):
-		pygame.init()
-		screen = pygame.display.set_mode(SIZE)
-
-		return screen
 
 	def _initialize_variables(self):
 		self.players = []
 		self.bullets = {}
 		self.last_shoot = {}
+		self.sim_time = 0
 
 		self.players.append(Player(self._player1_box.center, 0, self._player1_box, graphic_mode = self.graphic_mode))
 		self.players.append(Player(self._player2_box.center, 180, self._player2_box, graphic_mode = self.graphic_mode))
@@ -40,18 +44,19 @@ class Game:
 
 			self.last_shoot[p] = 0
 
-	def _build(self):
-		self._initialize_board()
-		self._initialize_variables()
 
-		if self.graphic_mode:
-			self.screen = self._initialize_graphic()
+	def _initialize_graphic(self):
+		pygame.init()
+		screen = pygame.display.set_mode(SIZE)
+
+		return screen
+
 
 	def _clear_screen(self):
 		self.screen.fill(BACKGROUND_COLOR)
 
-		pygame.draw.line(self.screen, (0,0,0), (WIDTH/3,0), (WIDTH/3, HEIGHT), 2)
-		pygame.draw.line(self.screen, (0,0,0), (2*WIDTH/3,0), (2*WIDTH/3, HEIGHT), 2)
+		pygame.draw.line(self.screen, (0,0,0), (WIDTH*BOX_PROPORTION,0), (WIDTH*BOX_PROPORTION, HEIGHT), 2)
+		pygame.draw.line(self.screen, (0,0,0), (WIDTH*(1-BOX_PROPORTION),0), (WIDTH*(1-BOX_PROPORTION), HEIGHT), 2)
 
 
 	def random_restart(self):
@@ -67,24 +72,27 @@ class Game:
 		action_space = {p:[] for p in self.players}
 		done = False
 
+		# make players do actions
 		for p,a in zip(self.players, actions):
-			if a is Actions.MOVE:
+			if a is Actions.MOVE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE:
 				p.move(MOVE_STEP)
 			
-			elif a is Actions.ROTATE_CLOCKWISE:
+			elif a is Actions.ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE:
 				p.rotate_clockwise(ROTATION_STEP)
 			
-			elif a is Actions.ROTATE_COUNTERCLOCKWISE:
+			elif a is Actions.ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE:
 				p.rotate_counterclockwise(ROTATION_STEP)
 
 			elif a is Actions.FIRE and self.last_shoot[p] >= FIRE_DELAY:
 				self.bullets[p].add(p.fire())
 				self.last_shoot[p] = 0
 
+		# make bullets move
 		for p in self.players:
 			for b in self.bullets[p]:
 				b.move(BULLET_STEP)
 
+		# collect all observations (except FIRE_READY, which is added later)
 		for p in self.players:
 			for p2 in self.players:
 				if p != p2:
@@ -93,9 +101,10 @@ class Game:
 						obs = p.is_bullet_in_range(b)
 						if obs != Observation.BULLET_NOT_SIGHT:
 							observations[p].append(obs)
-			if p.is_touching_wall():
-				observations[p].append(Observation.WALL)
+			#if p.is_touching_wall():
+			#	observations[p].append(Observation.WALL)
 
+		# check if some bullets hit a player. If so, add rewards
 		for p in self.players:
 			for b in list(self.bullets[p]):
 				for p2 in self.players:
@@ -104,30 +113,52 @@ class Game:
 						self.bullets[p].remove(b)
 
 						# Add a reward point to player p
-						rewards[p] += REWARD_POSITIVE
-						rewards[p2] += REWARD_NEGATIVE
-						done = True
+						rewards[p] += REWARD_HIT_POSITIVE
+						rewards[p2] += REWARD_HIT_NEGATIVE
+
+		# add rewards for enemy in sight
+		for p in self.players:
+			for p2 in self.players:
+				if p != p2:
+					ob = p.is_opponent_in_range(p2)
+					if ob == Observation.ENEMY_INNER_SIGHT:
+						rewards[p] += REWARD_ENEMY_SIGHT_INNER
+					elif ob == Observation.ENEMY_OUTER_LEFT_SIGHT or ob == Observation.ENEMY_OUTER_RIGHT_SIGHT:
+						rewards[p] += REWARD_ENEMY_SIGHT_OUTER
 		
+		# remove bullets outside of screen
 		for p in self.players:
 			for b in list(self.bullets[p]):
 				if utils.is_outside(b.get_pos(), (0, 0, WIDTH, HEIGHT)):
 					self.bullets[p].remove(b)
 
+		# update the time from last shoot for each player and eventually add the FIRE_READY observation
 		for p in self.players:
 			self.last_shoot[p] += 1
 			if self.last_shoot[p] >= FIRE_DELAY:
 				observations[p].append(Observation.FIRE_READY)
 
+		# create an action space for each player
 		for p in self.players:
 			action_space[p].append(Actions.ROTATE_CLOCKWISE)
 			action_space[p].append(Actions.PASS)
 			action_space[p].append(Actions.ROTATE_COUNTERCLOCKWISE)
+			action_space[p].append(Actions.MOVE)
+			action_space[p].append(Actions.MOVE_AND_ROTATE_CLOCKWISE)
+			action_space[p].append(Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE)
 			if self.last_shoot[p] >= FIRE_DELAY:
 				action_space[p].append(Actions.FIRE)
-			if Observation.WALL not in observations[p]:
-				action_space[p].append(Actions.MOVE)
+			#if Observation.WALL not in observations[p]:
+			#	action_space[p].append(Actions.MOVE)
+
+		# check if simulation is finished
+		done = False
+		self.sim_time += 1
+		if self.sim_time > SIMULATION_TIME:
+			done = True
 
 		return [(tuple(observations[p]), rewards[p], done, action_space[p]) for p in self.players]
+
 
 	def render(self):
 		if not self.graphic_mode:
