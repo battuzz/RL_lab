@@ -28,8 +28,8 @@ class SARSA():
 	def learn(self, state, action, reward, next_state, next_action):
 		self.Q[state, action] = self.Q[state, action] + self.alpha * (reward + self.gamma * self.Q[next_state,next_action] - self.Q[state, action])
 		self.it += 1
-		if self.it % 100 == 0:
-			print("Size of Q: " + str(len(self.Q)))
+		if self.it%100 == 0:
+			print(self)
 
 	def next_action(self, state, action_space):
 		# Find action with e-greedy policy or that arg max a Q(s,a)
@@ -37,6 +37,9 @@ class SARSA():
 		if self.it % 100 == 0:
 			print("Best Q value: " + str(qa[0]) + " for action " + str(qa[1]))
 		return qa[1]
+
+	def __repr__(self):
+		return "Size of Q: {0}".format(len(self.Q))
 
 class Q_Learning():
 	def __init__(self):

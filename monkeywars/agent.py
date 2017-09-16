@@ -13,10 +13,10 @@ class Agent:
 		with open(os.path.join("models/", name), "wb") as f:
 			pickle.dump(self, f)
 
-	def load_state(self, name):
+	def load_from_state(name):
 		try:
 			with open(os.path.join("models/", name), "rb") as f:
-				self = pickle.load(f)
+				return pickle.load(f)
 		except Exception as e:
 			print("Could not load previous file")
 
@@ -89,6 +89,9 @@ class SARSALearningAgent(Agent):
 		self.previous_state = observation
 
 		return self.previous_action
+
+	def __repr__(self):
+		return self.sarsa.__repr__()
 
 	# def save_state(self, name):
 	# 	with open(os.path.join("models/", name), "wb") as f:
