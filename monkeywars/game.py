@@ -80,10 +80,10 @@ class Game:
 			elif a is Actions.MOVE_BACK:
 				p.move(-MOVE_STEP)
 			
-			elif a is Actions.ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE:
+			elif a is Actions.ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE:
 				p.rotate_clockwise(ROTATION_STEP)
 			
-			elif a is Actions.ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE:
+			elif a is Actions.ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE:
 				p.rotate_counterclockwise(ROTATION_STEP)
 
 			elif a is Actions.FIRE and self.last_shoot[p] >= FIRE_DELAY:
@@ -150,6 +150,8 @@ class Game:
 			action_space[p].append(Actions.MOVE_BACK)
 			action_space[p].append(Actions.MOVE_AND_ROTATE_CLOCKWISE)
 			action_space[p].append(Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE)
+			action_space[p].append(Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE)
+			action_space[p].append(Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE)
 			if self.last_shoot[p] >= FIRE_DELAY:
 				action_space[p].append(Actions.FIRE)
 			#if Observation.WALL not in observations[p]:

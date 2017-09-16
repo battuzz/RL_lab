@@ -32,10 +32,10 @@ class RandomAgent(Agent):
 class ShooterAgent(Agent):
 	def act(self, observation, reward, done, action_space):
 		if Observation.ENEMY_OUTER_RIGHT_SIGHT in observation:
-			return Actions.ROTATE_COUNTERCLOCKWISE
+			return Actions.ROTATE_CLOCKWISE
 
 		if Observation.ENEMY_OUTER_LEFT_SIGHT in observation:
-			return Actions.ROTATE_CLOCKWISE
+			return Actions.ROTATE_COUNTERCLOCKWISE
 
 		if Observation.ENEMY_INNER_SIGHT in observation and Observation.FIRE_READY in observation:
 			return Actions.FIRE

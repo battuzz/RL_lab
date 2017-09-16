@@ -66,4 +66,4 @@ def angle_distance(sourceA, targetA):
 	""" Distance from a1 to a2, in degrees """
 	radT = to_radians(targetA)
 	radS = to_radians(sourceA)
-	return to_degrees(math.atan2(math.sin(radT - radS), math.cos(radT - radS)))
+	return to_degrees(-math.atan2(math.sin(radT - radS), math.cos(radT - radS)))
