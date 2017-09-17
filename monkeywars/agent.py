@@ -2,7 +2,7 @@ import os
 import random
 import utils
 from constants import Observation, Actions
-from algorithms import SARSA, Q_Learning
+from algorithms import *
 import pickle
 
 class Agent:
@@ -112,11 +112,11 @@ class EscapeAgent(Agent):
 		return ret
 
 class SARSALearningAgent(Agent):
-	def __init__(self, policy, learn = True):
+	def __init__(self, alpha=0.1, gamma=0.3, policy=EGreedyPolicy(epsilon=0.05), learn = True):
 		super().__init__()
 
 		self.learn = learn
-		self.sarsa = SARSA(policy)
+		self.sarsa = SARSA(alpha, gamma, policy)
 		self.previous_state = None
 
 	def act(self, observation, reward, done, action_space):
@@ -147,11 +147,11 @@ class SARSALearningAgent(Agent):
 	# 		pass
 
 class QLearningAgent(Agent):
-	def __init__(self, policy, learn = True):
+	def __init__(self, alpha=0.1, gamma=0.3, policy=EGreedyPolicy(epsilon=0.05), learn = True):
 		super().__init__()
 
 		self.learn = learn
-		self.Q = Q_Learning(policy)
+		self.Q = Q_Learning(alpha, gamma, policy)
 		self.previous_state = None
 
 	def act(self, observation, reward, done, action_space):

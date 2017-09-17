@@ -50,10 +50,10 @@ class GLIECosinePolicy():
 
 
 class SARSA():
-	def __init__(self, policy):
+	def __init__(self, alpha=0.1, gamma=0.3, policy=EGreedyPolicy(0.05)):
 		self.Q = collections.defaultdict(utils.default_dict_initializer)
-		self.alpha = 0.1
-		self.gamma = 0.3
+		self.alpha = alpha
+		self.gamma = gamma
 		self.policy = policy
 		self.it = 1
 
@@ -69,10 +69,10 @@ class SARSA():
 		return "Size of Q: {0}".format(len(self.Q))
 
 class Q_Learning():
-	def __init__(self, policy):
+	def __init__(self, alpha=0.1, gamma=0.3, policy=EGreedyPolicy(0.05)):
 		self.Q = collections.defaultdict(utils.default_dict_initializer)
-		self.alpha = 0.1
-		self.gamma = 0.3
+		self.alpha = alpha
+		self.gamma = gamma
 		self.policy = policy
 		self.it = 1
 

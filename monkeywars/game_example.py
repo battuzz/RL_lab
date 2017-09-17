@@ -11,10 +11,10 @@ def main(render = True):
 
 	shooter = Agent.load_from_state("SARSA1.model")
 	if shooter == None:
-		shooter = SARSALearningAgent(GLIELinearPolicy(0.05, 0.4, 0.00005))
+		shooter = SARSALearningAgent(alpha=0.1, gamma=0.3, policy=GLIELinearPolicy(0.05, 0.4, 0.00005))
 	escaper = Agent.load_from_state("SARSA2.model")
 	if escaper == None:
-		escaper = SARSALearningAgent(GLIELinearPolicy(0.05, 0.4, 0.00005))
+		escaper = SARSALearningAgent(alpha=0.1, gamma=0.3, policy=GLIELinearPolicy(0.05, 0.4, 0.00005))
 
 	o1 = [(), 0, False, list(Actions)]
 	o2 = [(), 0, False, list(Actions)]
