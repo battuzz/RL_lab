@@ -16,18 +16,35 @@ class EGreedyPolicy():
 			return max([(Q[state,a],a) for a in action_space])[1]
 
 class GLIELinearPolicy():
-	def __init__(self, epsilon, min_epsilon, epsilon_decrease):
-		self.epsilon = epsilon
+	def __init__(self, min_epsilon, max_epsilon, epsilon_decrease):
+		self.max_epsilon = max_epsilon
 		self.min_epsilon = min_epsilon
 		self.epsilon_decrease = epsilon_decrease
 		self.it = 0
 
 	def sample_action(self, state, Q, action_space):
 		self.it += 1
-		if random.random() < max(self.epsilon - self.epsilon_decrease*self.it, self.min_epsilon):
+		if random.random() < max(self.max_epsilon - self.epsilon_decrease*self.it, self.min_epsilon):
 			return (0, random.choice(action_space))
 		else:
 			return max([(Q[state,a],a) for a in action_space])[1]
+
+class GLIECosinePolicy():
+	def __init__(self, min_epsilon, max_epsilon, T):
+		self.max_epsilon = max_epsilon
+		self.min_epsilon = min_epsilon
+		self.T = T
+		self.it = 0
+
+	def sample_action(self, state, Q, action_space):
+		self.it += 1
+		t = math.cos(self.it*self.T)*(self.max_epsilon - self.min_epsilon)/2 + (self.max_epsilon - self.min_epsilon)/2
+		if random.random() < t:
+			return (0, random.choice(action_space))
+		else:
+			return max([(Q[state,a],a) for a in action_space])[1]
+
+
 
 
 

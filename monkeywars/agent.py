@@ -45,6 +45,41 @@ class ShooterAgent(Agent):
 
 		return Actions.ROTATE_CLOCKWISE
 
+class MoveAndShootAgent(Agent):
+	def __init__(self, state_time):
+		super().__init__()
+		self.state_time = state_time
+		self.state = 0
+
+	def act(self, observation, reward, done, action_space):
+		self.state = (self.state + 1) % (self.state_time*4)
+		if self.state < self.state_time:
+			ret = None
+			if self.state < self.state_time/2:
+				ret = Actions.MOVE_AND_ROTATE_CLOCKWISE
+			else:
+				ret = Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE
+			return ret
+
+		elif self.state > self.state_time*2 and self.state < self.state_time*3:
+			ret = None
+			if self.state < self.state_time*5/2:
+				ret = Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE
+			else:
+				ret = Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE
+			return ret
+
+		else:
+			if Observation.ENEMY_OUTER_RIGHT_SIGHT in observation:
+				return Actions.ROTATE_CLOCKWISE
+			if Observation.ENEMY_OUTER_LEFT_SIGHT in observation:
+				return Actions.ROTATE_COUNTERCLOCKWISE
+			if Observation.ENEMY_INNER_SIGHT in observation and Observation.FIRE_READY in observation:
+				return Actions.FIRE
+			if Observation.ENEMY_INNER_SIGHT in observation and Observation.FIRE_READY not in observation:
+				return Actions.PASS
+			return Actions.ROTATE_CLOCKWISE
+
 class EscapeAgent(Agent):
 	def __init__(self):
 		super().__init__()

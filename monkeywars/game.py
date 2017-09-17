@@ -63,7 +63,7 @@ class Game:
 		self._initialize_variables()
 
 		for p in self.players:
-			p.set_position_angle(utils.random_position_in_boundary(p.boundary), random.choice([i for i in range(0, 360, ROTATION_STEP)]))
+			p.set_position_angle(utils.random_position_in_boundary(p.boundary), random.uniform(0, 360))
 
 
 	def step(self, actions):
@@ -77,16 +77,16 @@ class Game:
 			if a is Actions.MOVE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE:
 				p.move(MOVE_STEP)
 
-			elif a is Actions.MOVE_BACK:
+			if a is Actions.MOVE_BACK or a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE:
 				p.move(-MOVE_STEP)
 			
-			elif a is Actions.ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE:
+			if a is Actions.ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE:
 				p.rotate_clockwise(ROTATION_STEP)
 			
-			elif a is Actions.ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE:
+			if a is Actions.ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE:
 				p.rotate_counterclockwise(ROTATION_STEP)
 
-			elif a is Actions.FIRE and self.last_shoot[p] >= FIRE_DELAY:
+			if a is Actions.FIRE and self.last_shoot[p] >= FIRE_DELAY:
 				self.bullets[p].add(p.fire())
 				self.last_shoot[p] = 0
 
@@ -154,8 +154,6 @@ class Game:
 			action_space[p].append(Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE)
 			if self.last_shoot[p] >= FIRE_DELAY:
 				action_space[p].append(Actions.FIRE)
-			#if Observation.WALL not in observations[p]:
-			#	action_space[p].append(Actions.MOVE)
 
 		# check if simulation is finished
 		done = False
