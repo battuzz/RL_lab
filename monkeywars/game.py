@@ -35,6 +35,7 @@ class Game:
 		self.bullets = {}
 		self.last_shoot = {}
 		self.sim_time = 0
+		self.finished = False
 
 		self.players.append(Player(self._player1_box.center, 0, self._player1_box, graphic_mode = self.graphic_mode))
 		self.players.append(Player(self._player2_box.center, 180, self._player2_box, graphic_mode = self.graphic_mode))
@@ -160,6 +161,7 @@ class Game:
 		self.sim_time += 1
 		if self.sim_time > SIMULATION_TIME:
 			done = True
+			self.finished = True
 
 		return [(tuple(observations[p]), rewards[p], done, action_space[p]) for p in self.players]
 
@@ -181,6 +183,9 @@ class Game:
 
 
 		pygame.display.flip()
+
+	def is_finished(self):
+		return self.finished
 
 
 
