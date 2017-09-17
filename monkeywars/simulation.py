@@ -37,6 +37,8 @@ class Simulation():
 
 		while it < num_episodes:
 			it += 1
+			#print("Episode " + str(it))
+			pygame_sdl2.display.set_caption("Episode " + str(it))
 			prev_state = [((), 0, False, list(Actions)) for a in self.agents]
 
 			self.game.random_restart()
@@ -95,7 +97,7 @@ class Simulation():
 class ToySimulation(Simulation):
 	def __init__(self, render=True):
 		game = Game(graphic_mode=render)
-		agents = [SARSALearningAgent(GLIELinearPolicy(0.5, 0.01, 0.000005)) for i in range(2)]
+		agents = [SARSALearningAgent(alpha=0.1, gamma=0.3, policy=GLIELinearPolicy(0.05, 0.4, 0.00005)) for i in range(2)]
 
 		super().__init__(game, agents, render=render)
 

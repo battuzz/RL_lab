@@ -4,6 +4,7 @@ import utils
 from constants import Observation, Actions
 from algorithms import *
 import pickle
+import pygame_sdl2
 
 class Agent:
 	def act(self, observation, reward, done, action_space):
@@ -44,6 +45,48 @@ class ShooterAgent(Agent):
 			return Actions.PASS
 
 		return Actions.ROTATE_CLOCKWISE
+
+class PlayerAgent(Agent):
+	def act(self, observation, reward, done, action_space):
+		move = 0
+		direction = 0
+		fire = False
+		
+		keys = pygame_sdl2.key.get_pressed()
+
+		if keys[pygame_sdl2.K_w]:
+			move = 1
+		elif keys[pygame_sdl2.K_s]:
+			move = -1
+		if keys[pygame_sdl2.K_a]:
+			direction = -1
+		elif keys[pygame_sdl2.K_d]:
+			direction = 1
+		if keys[pygame_sdl2.K_SPACE]:
+			fire = True
+
+		if fire:
+			return Actions.FIRE
+		if move == 1:
+			if direction == 1:
+				return Actions.MOVE_AND_ROTATE_CLOCKWISE
+			elif direction == -1:
+				return Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE
+			else:
+				return Actions.MOVE
+		elif move == -1:
+			if direction == 1:
+				return Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE
+			elif direction == -1:
+				return Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE
+			else:
+				return Actions.MOVE_BACK
+		elif direction == 1:
+			return Actions.ROTATE_CLOCKWISE
+		elif direction == -1:
+			return Actions.ROTATE_COUNTERCLOCKWISE
+
+		return Actions.PASS
 
 class MoveAndShootAgent(Agent):
 	def __init__(self, state_time):

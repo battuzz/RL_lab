@@ -1,4 +1,4 @@
-import pygame
+import pygame_sdl2
 import math
 import utils
 from bullet import Bullet
@@ -15,8 +15,8 @@ class Player:
 		self.direction = math.cos(utils.to_radians(self.angle)), math.sin(utils.to_radians(self.angle))
 
 		if self.graphic_mode:
-			self.image = pygame.image.load("images/monkey1.png")
-			self.image = pygame.transform.scale(self.image, (2*self.radius, 2*self.radius))
+			self.image = pygame_sdl2.image.load("images/monkey1.png")
+			self.image = pygame_sdl2.transform.scale(self.image, (2*self.radius, 2*self.radius))
 
 			self.rect = self.image.get_rect()
 
@@ -26,9 +26,9 @@ class Player:
 
 		self.rect.center = self.pos
 		
-		rotated_image = pygame.transform.rotate(self.image, -self.angle)
+		rotated_image = pygame_sdl2.transform.rotate(self.image, -self.angle)
 		if self.direction[0] < 0:
-			rotated_image = pygame.transform.flip(rotated_image, True, True)
+			rotated_image = pygame_sdl2.transform.flip(rotated_image, True, True)
 
 		newrect = rotated_image.get_rect(center=self.rect.center)
 		screen.blit(rotated_image, newrect)
@@ -36,14 +36,14 @@ class Player:
 		dir_upper = math.cos(utils.to_radians(self.angle + INNER_FIELD_ANGLE/2)), math.sin(utils.to_radians(self.angle + INNER_FIELD_ANGLE/2))
 		dir_lower = math.cos(utils.to_radians(self.angle - INNER_FIELD_ANGLE/2)), math.sin(utils.to_radians(self.angle - INNER_FIELD_ANGLE/2))
 		
-		pygame.draw.line(screen, (0, 0, 0), self.pos, (self.pos[0] + DEPTH_VISION*dir_upper[0], self.pos[1] + DEPTH_VISION*dir_upper[1]), 2)
-		pygame.draw.line(screen, (0, 0, 0), self.pos, (self.pos[0] + DEPTH_VISION*dir_lower[0], self.pos[1] + DEPTH_VISION*dir_lower[1]), 2)
+		pygame_sdl2.draw.line(screen, (0, 0, 0), self.pos, (self.pos[0] + DEPTH_VISION*dir_upper[0], self.pos[1] + DEPTH_VISION*dir_upper[1]), 2)
+		pygame_sdl2.draw.line(screen, (0, 0, 0), self.pos, (self.pos[0] + DEPTH_VISION*dir_lower[0], self.pos[1] + DEPTH_VISION*dir_lower[1]), 2)
 
 		outer_dir_upper = math.cos(utils.to_radians(self.angle + OUTER_FIELD_ANGLE/2)), math.sin(utils.to_radians(self.angle + OUTER_FIELD_ANGLE/2))
 		outer_dir_lower = math.cos(utils.to_radians(self.angle - OUTER_FIELD_ANGLE/2)), math.sin(utils.to_radians(self.angle - OUTER_FIELD_ANGLE/2))
 
-		pygame.draw.line(screen, (255, 0, 0), self.pos, (self.pos[0] + DEPTH_VISION*outer_dir_upper[0], self.pos[1] + DEPTH_VISION*outer_dir_upper[1]), 1)
-		pygame.draw.line(screen, (255, 0, 0), self.pos, (self.pos[0] + DEPTH_VISION*outer_dir_lower[0], self.pos[1] + DEPTH_VISION*outer_dir_lower[1]), 1)
+		pygame_sdl2.draw.line(screen, (255, 0, 0), self.pos, (self.pos[0] + DEPTH_VISION*outer_dir_upper[0], self.pos[1] + DEPTH_VISION*outer_dir_upper[1]), 1)
+		pygame_sdl2.draw.line(screen, (255, 0, 0), self.pos, (self.pos[0] + DEPTH_VISION*outer_dir_lower[0], self.pos[1] + DEPTH_VISION*outer_dir_lower[1]), 1)
 
 
 
@@ -97,7 +97,7 @@ class Player:
 		bullet_angle = utils.get_angle((bullet_position[0] - self.pos[0], bullet_position[1] - self.pos[1]))
 		angle_diff = utils.angle_distance(self.angle, bullet_angle)
 
-		if abs(angle_diff) <= INNER_FIELD_ANGLE:
+		if abs(angle_diff) <= INNER_FIELD_ANGLE/2:
 			return Observation.BULLET_INNER_SIGHT
 
 		elif angle_diff >= 0 and angle_diff <= OUTER_FIELD_ANGLE/2:
@@ -108,8 +108,27 @@ class Player:
 
 		return Observation.BULLET_NOT_SIGHT
 
+	def is_bullet_in_direction(self, bullet):
+		bullet_position = bullet.get_pos()
+		angle_from_bullet_to_player = utils.get_angle((self.pos[0] - bullet_position[0], self.pos[1] - bullet_position[1]))
+		angle_diff = utils.angle_distance(utils.get_angle((bullet.direction[0], bullet.direction[1])), angle_from_bullet_to_player)
+
+		if abs(angle_diff) <= INNER_FIELD_ANGLE/2:
+			return Observation.BULLET_DIRECTION_AGAINST
+
+		elif angle_diff >= 0 and angle_diff <= OUTER_FIELD_ANGLE/2:
+			return Observation.BULLET_DIRECTION_LEFT
+
+		elif angle_diff < 0 and angle_diff >= -OUTER_FIELD_ANGLE/2:
+			return Observation.BULLET_DIRECTION_RIGHT
+
+		return Observation.BULLET_DIRECTION_AWAY
+
 	def is_touching_wall(self):
-		return utils.is_outside((self.pos[0] + self.direction[0]*WALL_SENSITIVITY, self.pos[1] + self.direction[1]*WALL_SENSITIVITY), self.boundary)
+		return (utils.is_outside((self.pos[0] + WALL_SENSITIVITY, self.pos[1] + WALL_SENSITIVITY), self.boundary) or 
+		utils.is_outside((self.pos[0] + WALL_SENSITIVITY, self.pos[1] - WALL_SENSITIVITY), self.boundary) or 
+		utils.is_outside((self.pos[0] - WALL_SENSITIVITY, self.pos[1] + WALL_SENSITIVITY), self.boundary) or 
+		utils.is_outside((self.pos[0] - WALL_SENSITIVITY, self.pos[1] - WALL_SENSITIVITY), self.boundary))
 
 
 	def set_position_angle(self, new_position, new_angle):

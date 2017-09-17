@@ -1,60 +1,36 @@
 from game import Game
 import time
 import random
-from constants import Actions, Observation
+from constants import *
 import sys
 from agent import *
 from algorithms import *
+from simulation import Simulation
 
-def main(render = True):
-	game = Game(render)
-
-	shooter = Agent.load_from_state("SARSA1.model")
-	if shooter == None:
-		shooter = SARSALearningAgent(alpha=0.1, gamma=0.3, policy=GLIELinearPolicy(0.05, 0.4, 0.00005))
-	escaper = Agent.load_from_state("SARSA2.model")
-	if escaper == None:
-		escaper = SARSALearningAgent(alpha=0.1, gamma=0.3, policy=GLIELinearPolicy(0.05, 0.4, 0.00005))
-
-	o1 = [(), 0, False, list(Actions)]
-	o2 = [(), 0, False, list(Actions)]
-
-	it = 0
-	avg_max_rew_1 = 0
-	avg_max_rew_2 = 0
-	num_ep = 0
-	while True:
-		game_ended = False
-		game.random_restart()
-		cum_reward_1 = 0
-		cum_reward_2 = 0
-		num_ep += 1
-		while not game_ended:
-
-			a1 = shooter.act(*o1)
-			a2 = escaper.act(*o2)
-
-			o1, o2 = game.step([a1, a2])
-
-			game_ended = o1[2]
-
-			cum_reward_1 += o1[1]
-			cum_reward_2 += o2[1]
-			if render:
-				game.render()
-				
-		avg_max_rew_1 = avg_max_rew_1 * ((num_ep-1)/num_ep) + cum_reward_1/num_ep
-		avg_max_rew_2 = avg_max_rew_2 * ((num_ep-1)/num_ep) + cum_reward_2/num_ep
-		print(str(avg_max_rew_1) + "," + str(avg_max_rew_2))
-		shooter.save_state("SARSA1.model")
-		escaper.save_state("SARSA2.model")
-
-		#time.sleep(0.1)
+def main(render = True, new_agents = True):
+	max_epsilon = 0.4
+	min_epsilon = 0.05
+	num_episodes = 200
+	epsilon_increase = (max_epsilon - min_epsilon)/(num_episodes*SIMULATION_TIME)
+	game = Game(graphic_mode=render)
+	agents = []
+	if not new_agents:
+		agents = [Agent.load_from_state("SARSA_TOY_1.model"), Agent.load_from_state("FEDE.model")]
+	else:
+		agents = [SARSALearningAgent(alpha=0.1, gamma=0.3, policy=GLIELinearPolicy(min_epsilon, max_epsilon, epsilon_increase)),
+		PlayerAgent()]
+	s = Simulation(game, agents, render)
+	s.run(num_episodes=num_episodes)
+	s.save_agents(["SARSA_TOY_1.model", "SARSA_TOY_2.model"], overwrite=True)
+	#s.save_last_batch(batch_name="batch.dat", overwrite=True)
+	#s.export_csv(csv_name="results.csv", overwrite=True)
 
 
 if __name__=='__main__':
 	render = True
+	new_agents = True
 	if len(sys.argv) > 1:
-		render = False if sys.argv[1] == '--norender' else True
+		render = False if '--norender' in sys.argv else True
+		new_agents = False if '--load_agents' in sys.argv else True
 
-	main(render)
+	main(render, new_agents)

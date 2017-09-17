@@ -1,4 +1,4 @@
-import pygame
+import pygame_sdl2
 
 class Bullet:
 	def __init__(self, pos, direction, radius=10, graphic_mode=True):
@@ -8,8 +8,8 @@ class Bullet:
 		self.graphic_mode = graphic_mode
 
 		if self.graphic_mode:
-			self.image = pygame.image.load("images/banana.png")
-			self.image = pygame.transform.scale(self.image, (2*self.radius, 2*self.radius))
+			self.image = pygame_sdl2.image.load("images/banana.png")
+			self.image = pygame_sdl2.transform.scale(self.image, (2*self.radius, 2*self.radius))
 
 			self.rect = self.image.get_rect()
 
