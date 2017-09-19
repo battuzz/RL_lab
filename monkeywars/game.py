@@ -118,6 +118,12 @@ class Game:
 						if obs_pos != Observation.BULLET_NOT_SIGHT:
 							observations[p].append(obs_pos)
 							observations[p].append(obs_dir)
+
+						if obs_pos == Observation.BULLET_INNER_SIGHT:
+							rewards[p] += REWARD_BULLET_SIGHT_INNER
+						if obs_pos == Observation.BULLET_OUTER_LEFT_SIGHT or obs_pos == Observation.BULLET_OUTER_RIGHT_SIGHT:
+							rewards[p] += REWARD_BULLET_SIGHT_OUTER
+
 			if p.is_touching_wall():
 				#rewards[p] += REWARD_WALL
 				observations[p].append(Observation.WALL)
