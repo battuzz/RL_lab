@@ -137,20 +137,20 @@ class EscapeAgent(Agent):
 		# 	ret = Actions.MOVE
 		# return ret
 
-		if self.state < 5:
+		if self.state < 20:
 			ret = Actions.MOVE
-		if 5 <= self.state < 10:
-			ret = Actions.ROTATE_CLOCKWISE
-		if 10 <= self.state < 15:
+		if 5 <= self.state < 40:
+			ret = Actions.MOVE_AND_ROTATE_CLOCKWISE
+		if 10 <= self.state < 60:
+			ret = Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE
+		if 15 <= self.state < 80:
+			ret = Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE
+		if 20 <= self.state < 100:
 			ret = Actions.MOVE
-		if 15 <= self.state < 20:
-			ret = Actions.ROTATE_CLOCKWISE
-		if 20 <= self.state < 25:
-			ret = Actions.MOVE
-		if 25 <= self.state < 30:
-			ret = Actions.ROTATE_CLOCKWISE
+		if 25 <= self.state < 120:
+			ret = Actions.MOVE_AND_ROTATE_CLOCKWISE
 
-		self.state = (self.state + 1) % 30
+		self.state = (self.state + 1) % 120
 
 		return ret
 

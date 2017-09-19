@@ -37,7 +37,7 @@ class Simulation():
 
 		while it < num_episodes:
 			it += 1
-			#print("Episode " + str(it))
+			print("Episode " + str(it))
 			pygame_sdl2.display.set_caption("Episode " + str(it))
 			prev_state = [((), 0, False, list(Actions)) for a in self.agents]
 

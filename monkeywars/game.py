@@ -112,15 +112,28 @@ class Game:
 				if p != p2:
 					o = p.is_opponent_in_range(p2)
 					observations[p].append(o)
+					if o != Observation.ENEMY_NOT_SIGHT:
+						dist = p.get_distance_with(p2)
+						if dist < DISTANCE_THRESHOLD:
+							observations[p].append(Observation.ENEMY_NEAR)
+						else:
+							observations[p].append(Observation.ENEMY_FAR)
 					for b in self.bullets[p2]:
 						obs_pos = p.is_bullet_in_range(b)
-						obs_dir = p.is_bullet_in_direction(b)
+						#print(obs_pos)
 						if obs_pos != Observation.BULLET_NOT_SIGHT:
-							observations[p].append(obs_pos)
-							observations[p].append(obs_dir)
-			if p.is_touching_wall():
+							#observations[p].append(obs_pos)
+							observations[p].append(p.is_bullet_in_direction(b))
+							dist = p.get_distance_with(b)
+							if dist < DISTANCE_THRESHOLD:
+								#print(Observation.BULLET_NEAR)
+								observations[p].append(Observation.BULLET_NEAR)
+							else:
+								#print(Observation.BULLET_FAR)
+								observations[p].append(Observation.BULLET_FAR)
+			#if p.is_touching_wall():
 				#rewards[p] += REWARD_WALL
-				observations[p].append(Observation.WALL)
+				#observations[p].append(Observation.WALL)
 
 		# check if some bullets hit a player. If so, add rewards
 		for p in self.players:
@@ -159,14 +172,14 @@ class Game:
 		# create an action space for each player
 		for p in self.players:
 			action_space[p].append(Actions.ROTATE_CLOCKWISE)
-			action_space[p].append(Actions.PASS)
 			action_space[p].append(Actions.ROTATE_COUNTERCLOCKWISE)
 			action_space[p].append(Actions.MOVE)
-			action_space[p].append(Actions.MOVE_BACK)
 			action_space[p].append(Actions.MOVE_AND_ROTATE_CLOCKWISE)
 			action_space[p].append(Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE)
+			action_space[p].append(Actions.MOVE_BACK)
 			action_space[p].append(Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE)
 			action_space[p].append(Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE)
+			action_space[p].append(Actions.PASS)
 			if self.last_shoot[p] >= FIRE_DELAY:
 				action_space[p].append(Actions.FIRE)
 
