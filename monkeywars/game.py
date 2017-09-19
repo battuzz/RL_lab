@@ -120,10 +120,11 @@ class Game:
 							observations[p].append(Observation.ENEMY_FAR)
 					for b in self.bullets[p2]:
 						obs_pos = p.is_bullet_in_range(b)
+						obs_dir = p.is_bullet_in_direction(b)
 						#print(obs_pos)
 						if obs_pos != Observation.BULLET_NOT_SIGHT:
-							#observations[p].append(obs_pos)
-							observations[p].append(p.is_bullet_in_direction(b))
+							observations[p].append(obs_pos)
+							observations[p].append(obs_dir)
 							dist = p.get_distance_with(b)
 							if dist < DISTANCE_THRESHOLD:
 								#print(Observation.BULLET_NEAR)
@@ -131,6 +132,11 @@ class Game:
 							else:
 								#print(Observation.BULLET_FAR)
 								observations[p].append(Observation.BULLET_FAR)
+
+							if obs_pos == Observation.BULLET_INNER_SIGHT:
+								rewards[p] += REWARD_BULLET_SIGHT_INNER
+							if obs_pos == Observation.BULLET_OUTER_LEFT_SIGHT or obs_pos == Observation.BULLET_OUTER_RIGHT_SIGHT:
+								rewards[p] += REWARD_BULLET_SIGHT_OUTER
 			#if p.is_touching_wall():
 				#rewards[p] += REWARD_WALL
 				#observations[p].append(Observation.WALL)

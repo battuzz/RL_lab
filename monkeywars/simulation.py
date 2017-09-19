@@ -1,3 +1,4 @@
+import time
 import os
 from constants import *
 import pickle
@@ -66,11 +67,14 @@ class Simulation():
 					pickle.dump(agent, f)
 
 	def save_last_batch(self, batch_name="batch.dat", overwrite = False):
-		batch_name = _find_next_name("batches", batch_name)
+		if not overwrite:
+			batch_name = _find_next_name("batches", batch_name)
 		with open(os.path.join("batches", batch_name), "wb") as f:
 			pickle.dump(self.last_batch, f)
 
 	def export_csv(self, csv_name="results.csv", overwrite = False):
+		if not overwrite:
+			csv_name = _find_next_name("output", csv_name)
 		table = []
 
 		for it, episode in enumerate(self.last_batch):
@@ -87,7 +91,7 @@ class Simulation():
 		cols.extend(["incremental_mean_agent_%d"%(i) for i in range(len(self.agents))])
 		cols.extend(["cumulative_reward_agent_%d"%(i) for i in range(len(self.agents))])
 
-		with open(os.path.join("output", _find_next_name("output", csv_name)), "w") as f:
+		with open(os.path.join("output", csv_name), "w") as f:
 			f.write(','.join(cols) + "\n")
 			for row in table:
 				f.write(','.join(map(str, row)) + "\n")
