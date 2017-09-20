@@ -3,6 +3,7 @@ from constants import *
 import collections
 import utils
 import math
+import numpy as np
 
 
 class EGreedyPolicy():
@@ -45,6 +46,20 @@ class GLIECosinePolicy():
 			return max([(Q[state,a],a) for a in action_space])[1]
 
 
+class SoftMaxPolicy():
+	def __init__(self, tau=0.2, T=1000):
+		self.it = 1
+		self.tau = tau
+		self.T = T
+
+	def sample_action(self, state, Q, action_space):
+		self.tau = self.T/self.it
+		self.it += 1
+
+		values = np.array([Q[state, a] for a in action_space])
+		probs = np.exp(values/ self.tau)
+		probs = probs / np.sum(probs)
+		return np.random.choice(action_space, p=probs)
 
 
 
