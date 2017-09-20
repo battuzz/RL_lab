@@ -88,6 +88,44 @@ class PlayerAgent(Agent):
 
 		return Actions.PASS
 
+class PlayerQLearningAgent(PlayerAgent):
+	def __init__(self, alpha=0.1, gamma=0.3, policy=EGreedyPolicy(epsilon=0.05), learn = True, stdrew = 0.1):
+		super().__init__()
+
+		self.learn = learn
+		self.Q = Q_Learning(alpha, gamma, policy)
+		self.previous_state = None
+		self.controlled = False
+		self.stdrew = stdrew
+
+	def act(self, observation, reward, done, action_space):
+		keys = pygame_sdl2.key.get_pressed()
+
+		# Press 'p' to get control over the agent. The agent will learn while you play.
+		# Press 'p' again to make it playing using its acquired intelligence (and keep learning...)
+		if keys[pygame_sdl2.K_p]:
+			self.controlled = not self.controlled
+
+		if self.controlled:
+			action = super().act(observation, reward, done, action_space)
+			dropped_action = self.doLearn(observation, reward + self.stdrew, done, action_space)
+			return action
+		else:
+			return self.doLearn(observation, reward, done, action_space)
+
+	def doLearn(self, observation, reward, done, action_space):
+		if self.previous_state is None:
+			self.previous_action = random.choice(action_space)
+		else:
+			new_action = self.Q.next_action(observation, action_space)
+			if self.learn:
+				self.Q.learn(self.previous_state, self.previous_action, reward, observation, action_space)
+			self.previous_action = new_action
+
+		self.previous_state = observation
+
+		return self.previous_action
+
 class MoveAndShootAgent(Agent):
 	def __init__(self, state_time):
 		super().__init__()
@@ -137,20 +175,20 @@ class EscapeAgent(Agent):
 		# 	ret = Actions.MOVE
 		# return ret
 
-		if self.state < 5:
+		if self.state < 20:
 			ret = Actions.MOVE
-		if 5 <= self.state < 10:
-			ret = Actions.ROTATE_CLOCKWISE
-		if 10 <= self.state < 15:
+		if 5 <= self.state < 40:
+			ret = Actions.MOVE_AND_ROTATE_CLOCKWISE
+		if 10 <= self.state < 60:
+			ret = Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE
+		if 15 <= self.state < 80:
+			ret = Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE
+		if 20 <= self.state < 100:
 			ret = Actions.MOVE
-		if 15 <= self.state < 20:
-			ret = Actions.ROTATE_CLOCKWISE
-		if 20 <= self.state < 25:
-			ret = Actions.MOVE
-		if 25 <= self.state < 30:
-			ret = Actions.ROTATE_CLOCKWISE
+		if 25 <= self.state < 120:
+			ret = Actions.MOVE_AND_ROTATE_CLOCKWISE
 
-		self.state = (self.state + 1) % 30
+		self.state = (self.state + 1) % 120
 
 		return ret
 

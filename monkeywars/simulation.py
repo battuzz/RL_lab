@@ -26,10 +26,11 @@ def _find_next_name(base_dir, name):
 	return new_name
 
 class Simulation():
-	def __init__(self, game, agents, render=False):
+	def __init__(self, game, agents, render=False, shouldSaveBatch=True):
 		self.game = game
 		self.agents = agents
 		self.render = render
+		self.shouldSaveBatch = shouldSaveBatch
 		self.last_batch = []
 
 	def run(self, num_episodes = 2):
@@ -38,7 +39,7 @@ class Simulation():
 
 		while it < num_episodes:
 			it += 1
-			#print("Episode " + str(it))
+			print("Episode " + str(it))
 			pygame_sdl2.display.set_caption("Episode " + str(it))
 			prev_state = [((), 0, False, list(Actions)) for a in self.agents]
 
@@ -49,14 +50,15 @@ class Simulation():
 				actions = [agent.act(*obs) for agent,obs in zip(self.agents, prev_state)]
 				next_state = self.game.step(actions)
 
-				episode.append((prev_state, actions, next_state, self.game.is_finished()))
+				if self.shouldSaveBatch:
+					episode.append((prev_state, actions, next_state, self.game.is_finished()))
 
 				prev_state = next_state
 				if self.render:
 					self.game.render()
-
-			self.last_batch.append(episode)
-
+			if self.shouldSaveBatch:
+				self.last_batch.append(episode)
+			
 	def save_agents(self, agent_names, overwrite=False):
 		for agent, agent_name in zip(self.agents, agent_names):
 			if agent_name is not None:
@@ -95,6 +97,31 @@ class Simulation():
 			f.write(','.join(cols) + "\n")
 			for row in table:
 				f.write(','.join(map(str, row)) + "\n")
+
+	def printQOfAgent(self, agentIndex):
+		agent = self.agents[agentIndex]
+		s = ""
+		for o in Observation:
+			s += o.name + ","
+		for a in Actions:
+			s += a.name + ","
+		print(s[:-1])
+		keys = set()
+		for key in agent.Q.Q:
+			keys.add(key[0])
+		for key in keys:
+			s = ""
+			for o in Observation:
+				if o in key:
+					s += str(1) + ","
+				else:
+					s += str(0) + ","
+			for a in Actions:
+				if (key, a) in agent.Q.Q:
+					s += str(agent.Q.Q[(key, a)]) + ','
+				else:
+					s += str(0) + ','
+			print(s[:-1])
 
 
 
