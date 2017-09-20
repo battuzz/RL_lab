@@ -6,13 +6,14 @@ from constants import *
 
 
 class Player:
-	def __init__(self, pos, angle = 0, boundary=None, radius=30, graphic_mode = True):
+	def __init__(self, pos, angle = 0, boundary=None, radius=30, graphic_mode = True, name = ""):
 		self.pos = pos
 		self.boundary = boundary
 		self.radius = radius
 		self.graphic_mode = graphic_mode
 		self.angle = utils.normalize_angle(angle)
 		self.direction = math.cos(utils.to_radians(self.angle)), math.sin(utils.to_radians(self.angle))
+		self.name = name
 
 		if self.graphic_mode:
 			self.image = pygame_sdl2.image.load("images/monkey1.png")
@@ -20,7 +21,7 @@ class Player:
 
 			self.rect = self.image.get_rect()
 
-	def draw(self, screen):
+	def draw(self, screen, font):
 		if not self.graphic_mode:
 			return
 
@@ -51,6 +52,10 @@ class Player:
 		pygame_sdl2.draw.line(screen, (100, 100, 100), self.pos, (self.pos[0] + DEPTH_VISION*vision_dir_upper[0], self.pos[1] + DEPTH_VISION*vision_dir_upper[1]), 1)
 		pygame_sdl2.draw.line(screen, (100, 100, 100), self.pos, (self.pos[0] + DEPTH_VISION*vision_dir_lower[0], self.pos[1] + DEPTH_VISION*vision_dir_lower[1]), 1)
 
+		# display name
+		label = font.render(self.name, 1, (0,0,0))
+		w = label.get_rect().width
+		screen.blit(label, (self.pos[0]-w/2, self.pos[1]-50))
 
 
 	def move(self, amount):
