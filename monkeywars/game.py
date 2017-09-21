@@ -142,9 +142,15 @@ class Game:
 							#	rewards[p] += REWARD_BULLET_SIGHT_INNER
 							#if obs_pos == Observation.BULLET_OUTER_LEFT_SIGHT or obs_pos == Observation.BULLET_OUTER_RIGHT_SIGHT:
 							#	rewards[p] += REWARD_BULLET_SIGHT_OUTER
-			#if p.is_touching_wall():
-				#rewards[p] += REWARD_WALL
-				#observations[p].append(Observation.WALL)
+			is_touching_a_wall = False
+			if p.is_touching_wall(WALL_DIRECTION_RIGHT):
+				is_touching_a_wall = True
+				observations[p].append(Observation.WALL_RIGHT)
+			if p.is_touching_wall(WALL_DIRECTION_LEFT):
+				is_touching_a_wall = True
+				observations[p].append(Observation.WALL_LEFT)
+			if is_touching_a_wall:
+				rewards[p] += REWARD_WALL
 
 		# add standard reward
 		for p in self.players:

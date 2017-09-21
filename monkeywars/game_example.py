@@ -26,7 +26,7 @@ def main(render = True, new_agents = True):
 	else:
 		agents = [
 		QLearningAgent(alpha=0.1, gamma=0.7, policy=GLIELinearPolicy(min_epsilon, max_epsilon, epsilon_increase)),
-		QLearningAgent(alpha=0.1, gamma=0.7, policy=GLIELinearPolicy(min_epsilon, max_epsilon, epsilon_increase))
+		PlayerAgent()
 		]
 	s = Simulation(game, agents, render, shouldSaveBatch=False)
 	s.run(num_episodes=num_episodes)

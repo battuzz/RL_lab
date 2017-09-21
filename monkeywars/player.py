@@ -152,11 +152,20 @@ class Player:
 
 		return Observation.BULLET_DIRECTION_AWAY
 
-	def is_touching_wall(self):
-		return (utils.is_outside((self.pos[0] + WALL_SENSITIVITY, self.pos[1] + WALL_SENSITIVITY), self.boundary) or 
-		utils.is_outside((self.pos[0] + WALL_SENSITIVITY, self.pos[1] - WALL_SENSITIVITY), self.boundary) or 
-		utils.is_outside((self.pos[0] - WALL_SENSITIVITY, self.pos[1] + WALL_SENSITIVITY), self.boundary) or 
-		utils.is_outside((self.pos[0] - WALL_SENSITIVITY, self.pos[1] - WALL_SENSITIVITY), self.boundary))
+	def is_touching_wall(self, direction):
+		# direction = WALL_DIRECTION_RIGHT or WALL_DIRECTION_LEFT
+		res = False
+		angle_step = WALL_SIGHT_ANGLE/(WALL_SIGHT_NUM_RAYS - 1)
+		math.cos(utils.to_radians(self.angle)), math.sin(utils.to_radians(self.angle))
+		for i in range(0,WALL_SIGHT_NUM_RAYS):
+			delta_angle = self.angle + angle_step*i if direction == WALL_DIRECTION_RIGHT else self.angle - angle_step*i
+			res = res or utils.is_outside((
+				self.pos[0] + WALL_SENSITIVITY * math.cos(utils.to_radians(delta_angle)),
+				self.pos[1] + WALL_SENSITIVITY * math.sin(utils.to_radians(delta_angle))),
+			self.boundary)
+			if res:
+				break
+		return res
 
 
 	def set_position_angle(self, new_position, new_angle):
