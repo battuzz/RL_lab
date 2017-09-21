@@ -21,7 +21,7 @@ class Player:
 
 			self.rect = self.image.get_rect()
 
-	def draw(self, screen, font):
+	def draw(self, screen, font, score=""):
 		if not self.graphic_mode:
 			return
 
@@ -56,6 +56,11 @@ class Player:
 		label = font.render(self.name, 1, (0,0,0))
 		w = label.get_rect().width
 		screen.blit(label, (self.pos[0]-w/2, self.pos[1]-50))
+
+		# display score
+		scorelab = font.render(score[0:5], 1, (0,0,0))
+		w = scorelab.get_rect().width
+		screen.blit(scorelab, (self.pos[0]-w/2, self.pos[1]+40))
 
 
 	def move(self, amount):

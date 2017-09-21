@@ -35,6 +35,7 @@ class Game:
 		self.players = []
 		self.bullets = {}
 		self.last_shoot = {}
+		self.cumrew = {}
 		self.sim_time = 0
 		self.finished = False
 
@@ -44,6 +45,7 @@ class Game:
 		for p in self.players:
 			self.bullets[p] = set()
 			self.last_shoot[p] = 0
+			self.cumrew[p] = 0
 
 
 	def _initialize_graphic(self):
@@ -203,6 +205,9 @@ class Game:
 			done = True
 			self.finished = True
 
+		for p in self.players:
+			self.cumrew[p] += rewards[p]
+
 		return [(tuple(observations[p]), rewards[p], done, action_space[p]) for p in self.players]
 
 	def render(self):
@@ -215,8 +220,10 @@ class Game:
 
 		self._clear_screen()
 		for p in self.players:
-			p.draw(self.screen, self.font)
+			# draw players with name and score
+			p.draw(self.screen, self.font, score=str(self.cumrew[p]))
 
+			# draw bullets
 			for b in self.bullets[p]:
 				b.draw(self.screen)
 

@@ -197,6 +197,7 @@ class SARSALearningAgent(Agent):
 		super().__init__()
 
 		self.learn = learn
+		self.policy = policy
 		self.sarsa = SARSA(alpha, gamma, policy)
 		self.previous_state = None
 
@@ -232,6 +233,7 @@ class QLearningAgent(Agent):
 		super().__init__()
 
 		self.learn = learn
+		self.policy = policy
 		self.Q = Q_Learning(alpha, gamma, policy)
 		self.previous_state = None
 
