@@ -46,9 +46,14 @@ class Simulation():
 			self.game.random_restart()
 			episode = []
 
+			cum_rewards = [0,0]
+
 			while not self.game.is_finished():
 				actions = [agent.act(*obs) for agent,obs in zip(self.agents, prev_state)]
 				next_state = self.game.step(actions)
+
+				cum_rewards[0] += next_state[0][1]
+				cum_rewards[1] += next_state[1][1]
 
 				if self.shouldSaveBatch:
 					episode.append((prev_state, actions, next_state, self.game.is_finished()))
@@ -56,9 +61,12 @@ class Simulation():
 				prev_state = next_state
 				if self.render:
 					self.game.render()
+
+			print(cum_rewards)
+
 			if self.shouldSaveBatch:
 				self.last_batch.append(episode)
-			
+
 	def save_agents(self, agent_names, overwrite=False):
 		for agent, agent_name in zip(self.agents, agent_names):
 			if agent_name is not None:

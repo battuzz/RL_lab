@@ -69,6 +69,12 @@ class Observation(Enum):
 	BULLET_NEAR = 21
 	BULLET_FAR = 22
 
+	def __repr__(self):
+		return self.name
+
+	def __str__(self):
+		return self.name
+
 
 class Actions(Enum):
 	MOVE = 0
@@ -82,3 +88,8 @@ class Actions(Enum):
 	FIRE = 8
 	PASS = 9
 
+	def __repr__(self):
+		return self.name
+
+	def __str__(self):
+		return self.name
