@@ -28,13 +28,13 @@ WALL_SIGHT_NUM_RAYS = 5 # must be at least 2
 WALL_SENSITIVITY = 100 # the maximum distance between player and wall that activates the WALL observations
 
 REWARD_STANDARD = 0
-REWARD_HIT_POSITIVE = 0
-REWARD_HIT_NEGATIVE = 0
-REWARD_ENEMY_SIGHT_OUTER = 0
-REWARD_ENEMY_SIGHT_INNER = 0
-REWARD_BULLET_DIRECTION_AGAINST = 0
+REWARD_HIT_POSITIVE = 1
+REWARD_HIT_NEGATIVE = -2
+REWARD_ENEMY_SIGHT_OUTER = 0.0002
+REWARD_ENEMY_SIGHT_INNER = 0.001
+REWARD_BULLET_DIRECTION_AGAINST = -0.001
 REWARD_ENEMY_FAR = 0
-REWARD_WALL = 0.01
+REWARD_WALL = 0
 
 SIMULATION_TIME = 1000
 
@@ -93,3 +93,6 @@ class Actions(Enum):
 
 	def __str__(self):
 		return self.name
+
+	def __lt__(self, val):
+		return self.value < val.value

@@ -11,7 +11,7 @@ import utils
 
 
 class Game:
-	def __init__(self, graphic_mode=True, names=[]):
+	def __init__(self, graphic_mode=True, names=["Player1", "Player2"]):
 		self.graphic_mode = graphic_mode
 		self.names = names
 
@@ -76,7 +76,7 @@ class Game:
 		observations = {p:[] for p in self.players}
 		action_space = {p:[] for p in self.players}
 		done = False
-		
+
 		# make players do actions
 		for p,a in zip(self.players, actions):
 			if a is Actions.MOVE:
@@ -88,12 +88,12 @@ class Game:
 				p.move(-MOVE_STEP)
 			elif a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE:
 				p.move(-MOVE_STEP/2)
-			
+
 			if a is Actions.ROTATE_CLOCKWISE:
 				p.rotate_clockwise(ROTATION_STEP/2)
 			elif a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE:
 				p.rotate_clockwise(ROTATION_STEP)
-			
+
 			if a is Actions.ROTATE_COUNTERCLOCKWISE:
 				p.rotate_counterclockwise(ROTATION_STEP/2)
 			elif a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE:
@@ -177,7 +177,7 @@ class Game:
 						rewards[p] += REWARD_ENEMY_SIGHT_INNER
 					elif ob == Observation.ENEMY_OUTER_LEFT_SIGHT or ob == Observation.ENEMY_OUTER_RIGHT_SIGHT:
 						rewards[p] += REWARD_ENEMY_SIGHT_OUTER
-		
+
 		# remove bullets outside of screen
 		for p in self.players:
 			for b in list(self.bullets[p]):
@@ -207,8 +207,9 @@ class Game:
 		# check if simulation is finished
 		done = False
 		self.sim_time += 1
-		if self.sim_time > SIMULATION_TIME:
+		if self.sim_time >= SIMULATION_TIME:
 			done = True
+		if self.sim_time > SIMULATION_TIME:
 			self.finished = True
 
 		for p in self.players:
@@ -237,25 +238,3 @@ class Game:
 
 	def is_finished(self):
 		return self.finished
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

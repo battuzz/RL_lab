@@ -26,34 +26,35 @@ def _find_next_name(base_dir, name):
 	return new_name
 
 class Simulation():
-	def __init__(self, game, agents, render=False, shouldSaveBatch=True):
+	def __init__(self, game, agents, render=False, shouldSaveBatch=False):
 		self.game = game
 		self.agents = agents
 		self.render = render
 		self.shouldSaveBatch = shouldSaveBatch
 		self.last_batch = []
+		self.cum_rewards = []
 
 	def run(self, num_episodes = 2):
 		it = 0
 		self.last_batch = []
+		self.cum_rewards = [[0 for i in range(len(self.agents))] for _ in range(num_episodes)]
 
 		while it < num_episodes:
 			it += 1
 			print("Episode " + str(it))
-			pygame_sdl2.display.set_caption("Episode " + str(it))
+			if self.render:
+				pygame_sdl2.display.set_caption("Episode " + str(it))
 			prev_state = [((), 0, False, list(Actions)) for a in self.agents]
 
 			self.game.random_restart()
 			episode = []
 
-			cum_rewards = [0,0]
-
 			while not self.game.is_finished():
 				actions = [agent.act(*obs) for agent,obs in zip(self.agents, prev_state)]
 				next_state = self.game.step(actions)
 
-				cum_rewards[0] += next_state[0][1]
-				cum_rewards[1] += next_state[1][1]
+				for i in range(len(self.agents)):
+					self.cum_rewards[it-1][i] += next_state[i][1]
 
 				if self.shouldSaveBatch:
 					episode.append((prev_state, actions, next_state, self.game.is_finished()))
@@ -62,7 +63,7 @@ class Simulation():
 				if self.render:
 					self.game.render()
 
-			print(cum_rewards)
+			print(self.cum_rewards[it-1])
 
 			if self.shouldSaveBatch:
 				self.last_batch.append(episode)
@@ -82,20 +83,23 @@ class Simulation():
 		with open(os.path.join("batches", batch_name), "wb") as f:
 			pickle.dump(self.last_batch, f)
 
+	def get_results(self):
+		table = []
+
+		incremental_mean = [0 for a in self.agents]
+		for it, reward in enumerate(self.cum_rewards):
+			for i in range(len(self.agents)):
+				incremental_mean[i] = incremental_mean[i] * it / (it+1) + reward[i]/(it+1)
+
+			table.append([*incremental_mean[:], *reward[:]])
+
+		return table
+
 	def export_csv(self, csv_name="results.csv", overwrite = False):
 		if not overwrite:
 			csv_name = _find_next_name("output", csv_name)
-		table = []
 
-		for it, episode in enumerate(self.last_batch):
-			incremental_mean = [0 for a in self.agents]
-			cumulative_reward = [0 for a in self.agents]
-			for ep,(s, *_) in enumerate(episode):
-				for i in range(len(self.agents)):
-					cumulative_reward[i] += s[i][1]
-					incremental_mean[i] = incremental_mean[i] * it / (it+1) + cumulative_reward[i]/(it+1)
-
-			table.append([*incremental_mean[:], *cumulative_reward[:]])
+		table = self.get_results()
 
 		cols = []
 		cols.extend(["incremental_mean_agent_%d"%(i) for i in range(len(self.agents))])
@@ -139,9 +143,3 @@ class ToySimulation(Simulation):
 		agents = [SARSALearningAgent(alpha=0.1, gamma=0.3, policy=GLIELinearPolicy(0.05, 0.4, 0.00005)) for i in range(2)]
 
 		super().__init__(game, agents, render=render)
-
-
-
-
-
-
