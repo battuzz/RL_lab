@@ -47,6 +47,7 @@ REWARD_WALL = 0 # activated when the agent is near a wall (either left or right)
 SIMULATION_TIME = 1000 # simulation steps that define an episode
 
 
+
 class Observation(Enum):
 	ENEMY_NOT_SIGHT = 0
 	ENEMY_INNER_SIGHT = 1
@@ -77,6 +78,12 @@ class Observation(Enum):
 	BULLET_NEAR = 21
 	BULLET_FAR = 22
 
+	def __repr__(self):
+		return self.name
+
+	def __str__(self):
+		return self.name
+
 
 class Actions(Enum):
 	MOVE = 0
@@ -90,3 +97,11 @@ class Actions(Enum):
 	FIRE = 8
 	PASS = 9
 
+	def __repr__(self):
+		return self.name
+
+	def __str__(self):
+		return self.name
+
+	def __lt__(self, val):
+		return self.value < val.value

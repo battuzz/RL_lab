@@ -9,7 +9,7 @@ def random_position_in_boundary(boundary):
 	return (x,y)
 
 def default_dict_initializer():
-	return random.random()/2
+	return 0
 
 def is_outside(pos, box):
 	return  pos[0] < box[0] 		or \

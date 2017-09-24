@@ -21,14 +21,52 @@ class Agent:
 		except Exception as e:
 			print("Could not load previous file")
 
+	def _generate(self, index, prev_obs, obs):
+		if index >= len(obs):
+			return
+
+		for elem in obs[index]:
+			if elem is not None:
+				new_obs = prev_obs + [elem]
+				yield tuple(sorted(new_obs, key=lambda x : x.value))
+			else:
+				new_obs = prev_obs[:]
+			for o in self._generate(index+1, new_obs, obs):
+				yield o
+
+	def extract_greedy_policy(self):
+		enemy_sight = [Observation.ENEMY_NOT_SIGHT, Observation.ENEMY_OUTER_LEFT_SIGHT, Observation.ENEMY_OUTER_RIGHT_SIGHT, Observation.ENEMY_VISION_LEFT_SIGHT, Observation.ENEMY_VISION_RIGHT_SIGHT, Observation.ENEMY_INNER_SIGHT]
+		bullet_sight = [None, Observation.BULLET_OUTER_LEFT_SIGHT, Observation.BULLET_OUTER_RIGHT_SIGHT, Observation.BULLET_VISION_LEFT_SIGHT, Observation.BULLET_VISION_RIGHT_SIGHT, Observation.BULLET_INNER_SIGHT]
+		fire_ready = [None, Observation.FIRE_READY]
+		wall = [None, Observation.WALL_LEFT, Observation.WALL_RIGHT]
+		enemy_distance = [None, Observation.ENEMY_FAR, Observation.ENEMY_NEAR]
+		bullet_distance = [None, Observation.BULLET_FAR, Observation.BULLET_NEAR]
+		bullet_pos = [None, Observation.BULLET_DIRECTION_AGAINST, Observation.BULLET_DIRECTION_AWAY, Observation.BULLET_DIRECTION_LEFT, Observation.BULLET_DIRECTION_RIGHT]
+		obs = [[None], enemy_sight, bullet_sight, fire_ready, wall, enemy_distance, bullet_distance, bullet_pos]
+
+		prev_learning = self.learn
+		self.learn = False
+
+		pi = {}
+		for state in self._generate(0, [], obs):
+			pi[state] = self.act(state, 0, False, list(Actions))
+
+		self.learn = prev_learning
+		return pi
+
+
 
 class StillAgent(Agent):
 	def act(self, observation, reward, done, action_space):
 		return Actions.PASS
+	def __str__(self):
+		return "StillAgent"
 
 class RandomAgent(Agent):
 	def act(self, observation, reward, done, action_space):
 		return random.choice(action_space)
+	def __str__(self):
+		return "RandomAgent"
 
 class ShooterAgent(Agent):
 	def act(self, observation, reward, done, action_space):
@@ -45,13 +83,15 @@ class ShooterAgent(Agent):
 			return Actions.PASS
 
 		return Actions.ROTATE_CLOCKWISE
+	def __str__(self):
+		return "ShooterAgent"
 
 class PlayerAgent(Agent):
 	def act(self, observation, reward, done, action_space):
 		move = 0
 		direction = 0
 		fire = False
-		
+
 		keys = pygame_sdl2.key.get_pressed()
 
 		if keys[pygame_sdl2.K_w]:
@@ -87,6 +127,8 @@ class PlayerAgent(Agent):
 			return Actions.ROTATE_COUNTERCLOCKWISE
 
 		return Actions.PASS
+	def __str__(self):
+		return "PlayerAgent"
 
 class PlayerQLearningAgent(PlayerAgent):
 	""" stdrew is the reward given to the actions taken by the agent when under control of
@@ -127,6 +169,8 @@ class PlayerQLearningAgent(PlayerAgent):
 		self.previous_state = observation
 
 		return self.previous_action
+	def __str__(self):
+		return "PlayerQLearningAgent"
 
 class MoveAndShootAgent(Agent):
 	def __init__(self, state_time):
@@ -162,6 +206,8 @@ class MoveAndShootAgent(Agent):
 			if Observation.ENEMY_INNER_SIGHT in observation and Observation.FIRE_READY not in observation:
 				return Actions.PASS
 			return Actions.ROTATE_CLOCKWISE
+	def __str__(self):
+		return "MoveAndShootAgent"
 
 class EscapeAgent(Agent):
 	def __init__(self):
@@ -188,54 +234,29 @@ class EscapeAgent(Agent):
 		self.state = (self.state + 1) % 120
 
 		return ret
+	def __str__(self):
+		return "EscapeAgent"
 
-class SARSALearningAgent(Agent):
-	def __init__(self, alpha=0.1, gamma=0.3, policy=EGreedyPolicy(epsilon=0.05), learn = True):
+class LearningAgent(Agent):
+	def __init__(self, learning_algorithm=SARSA(), learn=True):
 		super().__init__()
 
-		self.learn = learn
-		self.policy = policy
-		self.sarsa = SARSA(alpha, gamma, policy)
+		self.learning_algorithm = learning_algorithm
 		self.previous_state = None
+		self.learn = learn
 
 	def act(self, observation, reward, done, action_space):
 		if self.previous_state is None:
 			self.previous_action = random.choice(action_space)
 		else:
-			new_action = self.sarsa.next_action(observation, action_space)
 			if self.learn:
-				self.sarsa.learn(self.previous_state, self.previous_action, reward, observation, new_action)
-			self.previous_action = new_action
+				self.learning_algorithm.learn(self.previous_state, self.previous_action, reward, observation, action_space)
+				if done:
+					self.learning_algorithm.episode_finished()
+			self.previous_action = self.learning_algorithm.next_action(observation, action_space)
 
 		self.previous_state = observation
-
 		return self.previous_action
 
-	def __repr__(self):
-		return self.sarsa.__repr__()
-
-
-class QLearningAgent(Agent):
-	def __init__(self, alpha=0.1, gamma=0.3, policy=EGreedyPolicy(epsilon=0.05), learn = True):
-		super().__init__()
-
-		self.learn = learn
-		self.policy = policy
-		self.Q = Q_Learning(alpha, gamma, policy)
-		self.previous_state = None
-
-	def act(self, observation, reward, done, action_space):
-		if self.previous_state is None:
-			self.previous_action = random.choice(action_space)
-		else:
-			new_action = self.Q.next_action(observation, action_space)
-			if self.learn:
-				self.Q.learn(self.previous_state, self.previous_action, reward, observation, action_space)
-			self.previous_action = new_action
-
-		self.previous_state = observation
-
-		return self.previous_action
-
-
-
+	def __str__(self):
+		return str(self.learning_algorithm)

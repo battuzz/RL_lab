@@ -26,8 +26,8 @@ def main(render = True, new_agents = True):
 		#	a.policy.reset()
 	else:
 		agents = [
-		SARSALearningAgent(alpha=0.1, gamma=0.4, policy=GLIELinearPolicy(min_epsilon, max_epsilon, epsilon_increase)),
-		ShooterAgent()#Agent.load_from_state(names[1] + ".model")
+		LearningAgent(SARSA(alpha=LinearDecreasingFactor(), gamma=0.7, policy=GLIELinearPolicy(min_epsilon, max_epsilon, epsilon_increase))),
+		StillAgent()
 		]
 		agents[1].learn = False
 	s = Simulation(game, agents, render, shouldSaveBatch=False)
