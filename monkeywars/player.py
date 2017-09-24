@@ -6,7 +6,7 @@ from constants import *
 
 
 class Player:
-	def __init__(self, pos, angle = 0, boundary=None, radius=30, graphic_mode = True, name = ""):
+	def __init__(self, pos, angle = 0, boundary=None, radius=PLAYER_RADIUS, graphic_mode = True, name = ""):
 		self.pos = pos
 		self.boundary = boundary
 		self.radius = radius
@@ -34,11 +34,11 @@ class Player:
 		newrect = rotated_image.get_rect(center=self.rect.center)
 		screen.blit(rotated_image, newrect)
 		
-		dir_upper = math.cos(utils.to_radians(self.angle + INNER_FIELD_ANGLE/2)), math.sin(utils.to_radians(self.angle + INNER_FIELD_ANGLE/2))
-		dir_lower = math.cos(utils.to_radians(self.angle - INNER_FIELD_ANGLE/2)), math.sin(utils.to_radians(self.angle - INNER_FIELD_ANGLE/2))
+		#dir_upper = math.cos(utils.to_radians(self.angle + INNER_FIELD_ANGLE/2)), math.sin(utils.to_radians(self.angle + INNER_FIELD_ANGLE/2))
+		#dir_lower = math.cos(utils.to_radians(self.angle - INNER_FIELD_ANGLE/2)), math.sin(utils.to_radians(self.angle - INNER_FIELD_ANGLE/2))
 		
-		pygame_sdl2.draw.line(screen, (0, 0, 0), self.pos, (self.pos[0] + DEPTH_VISION*dir_upper[0], self.pos[1] + DEPTH_VISION*dir_upper[1]), 2)
-		pygame_sdl2.draw.line(screen, (0, 0, 0), self.pos, (self.pos[0] + DEPTH_VISION*dir_lower[0], self.pos[1] + DEPTH_VISION*dir_lower[1]), 2)
+		#pygame_sdl2.draw.line(screen, (0, 0, 0), self.pos, (self.pos[0] + DEPTH_VISION*dir_upper[0], self.pos[1] + DEPTH_VISION*dir_upper[1]), 2)
+		#pygame_sdl2.draw.line(screen, (0, 0, 0), self.pos, (self.pos[0] + DEPTH_VISION*dir_lower[0], self.pos[1] + DEPTH_VISION*dir_lower[1]), 2)
 
 		outer_dir_upper = math.cos(utils.to_radians(self.angle + OUTER_FIELD_ANGLE/2)), math.sin(utils.to_radians(self.angle + OUTER_FIELD_ANGLE/2))
 		outer_dir_lower = math.cos(utils.to_radians(self.angle - OUTER_FIELD_ANGLE/2)), math.sin(utils.to_radians(self.angle - OUTER_FIELD_ANGLE/2))
@@ -93,11 +93,12 @@ class Player:
 		opponent_position = opponent.get_pos()
 		opponent_angle = utils.get_angle((opponent_position[0] - self.pos[0], opponent_position[1] - self.pos[1]))
 		angle_diff = utils.angle_distance(self.angle, opponent_angle)
+		dist = self.get_distance_with(opponent)
 
 		assert 0 <= opponent_angle < 360
 		assert 0 <= self.angle < 360
 
-		if abs(angle_diff) <= INNER_FIELD_ANGLE:
+		if dist * math.sin(abs(utils.to_radians(angle_diff))) <= INNER_FIELD/2 and -90 < angle_diff < 90:
 			return Observation.ENEMY_INNER_SIGHT
 
 		elif angle_diff >= 0 and angle_diff <= OUTER_FIELD_ANGLE/2:
@@ -118,8 +119,9 @@ class Player:
 		bullet_position = bullet.get_pos()
 		bullet_angle = utils.get_angle((bullet_position[0] - self.pos[0], bullet_position[1] - self.pos[1]))
 		angle_diff = utils.angle_distance(self.angle, bullet_angle)
+		dist = self.get_distance_with(bullet)
 
-		if abs(angle_diff) <= INNER_FIELD_ANGLE/2:
+		if dist * math.sin(abs(utils.to_radians(angle_diff))) <= INNER_FIELD/2 and -90 < angle_diff < 90:
 			return Observation.BULLET_INNER_SIGHT
 
 		elif angle_diff >= 0 and angle_diff <= OUTER_FIELD_ANGLE/2:
@@ -140,14 +142,15 @@ class Player:
 		bullet_position = bullet.get_pos()
 		angle_from_bullet_to_player = utils.get_angle((self.pos[0] - bullet_position[0], self.pos[1] - bullet_position[1]))
 		angle_diff = utils.angle_distance(utils.get_angle((bullet.direction[0], bullet.direction[1])), angle_from_bullet_to_player)
+		dist = self.get_distance_with(bullet)
 
-		if abs(angle_diff) <= INNER_FIELD_ANGLE/2:
+		if dist * math.sin(abs(utils.to_radians(angle_diff))) <= PLAYER_RADIUS+20 and -90 < angle_diff < 90:
 			return Observation.BULLET_DIRECTION_AGAINST
 
-		elif angle_diff >= 0 and angle_diff <= OUTER_FIELD_ANGLE/2:
+		elif angle_diff >= 0 and angle_diff <= BULLET_ANGLE_SIGHT/2:
 			return Observation.BULLET_DIRECTION_LEFT
 
-		elif angle_diff < 0 and angle_diff >= -OUTER_FIELD_ANGLE/2:
+		elif angle_diff < 0 and angle_diff >= -BULLET_ANGLE_SIGHT/2:
 			return Observation.BULLET_DIRECTION_RIGHT
 
 		return Observation.BULLET_DIRECTION_AWAY

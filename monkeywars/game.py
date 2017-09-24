@@ -27,8 +27,12 @@ class Game:
 
 
 	def _initialize_board(self):
-		self._player1_box = pygame_sdl2.Rect(0, 0, WIDTH*BOX_PROPORTION, HEIGHT)
-		self._player2_box = pygame_sdl2.Rect(WIDTH*(1-BOX_PROPORTION), 0, WIDTH*BOX_PROPORTION, HEIGHT)
+		self._player_boxes = []
+		#for n in self.names[:-1]:
+		#	self._player_boxes.append(pygame_sdl2.Rect(0, 0, WIDTH*BOX_PROPORTION, HEIGHT))
+		
+		self._player_boxes.append(pygame_sdl2.Rect(0, 0, WIDTH*BOX_PROPORTION, HEIGHT))
+		self._player_boxes.append(pygame_sdl2.Rect(WIDTH*(1-BOX_PROPORTION), 0, WIDTH*BOX_PROPORTION, HEIGHT))
 
 
 	def _initialize_variables(self):
@@ -39,8 +43,10 @@ class Game:
 		self.sim_time = 0
 		self.finished = False
 
-		self.players.append(Player(self._player1_box.center, 0, self._player1_box, graphic_mode = self.graphic_mode, name=self.names[0]))
-		self.players.append(Player(self._player2_box.center, 180, self._player2_box, graphic_mode = self.graphic_mode, name=self.names[1]))
+		for i,name in enumerate(self.names):
+			self.players.append(Player(self._player_boxes[i].center, 0, self._player_boxes[i], graphic_mode = self.graphic_mode, name=self.names[i]))
+		
+		#self.players.append(Player(self._player2_box.center, 180, self._player2_box, graphic_mode = self.graphic_mode, name=self.names[1]))
 
 		for p in self.players:
 			self.bullets[p] = set()
@@ -79,24 +85,16 @@ class Game:
 		
 		# make players do actions
 		for p,a in zip(self.players, actions):
-			if a is Actions.MOVE:
+			if a is Actions.MOVE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE:
 				p.move(MOVE_STEP)
-			elif a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE:
-				p.move(MOVE_STEP/2)
 
-			if a is Actions.MOVE_BACK:
+			if a is Actions.MOVE_BACK or a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE:
 				p.move(-MOVE_STEP)
-			elif a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE:
-				p.move(-MOVE_STEP/2)
 			
-			if a is Actions.ROTATE_CLOCKWISE:
-				p.rotate_clockwise(ROTATION_STEP/2)
-			elif a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE:
+			if a is Actions.ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE:
 				p.rotate_clockwise(ROTATION_STEP)
 			
-			if a is Actions.ROTATE_COUNTERCLOCKWISE:
-				p.rotate_counterclockwise(ROTATION_STEP/2)
-			elif a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE:
+			if a is Actions.ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE:
 				p.rotate_counterclockwise(ROTATION_STEP)
 
 			if a is Actions.FIRE and self.last_shoot[p] >= FIRE_DELAY:
@@ -113,36 +111,31 @@ class Game:
 			for p2 in self.players:
 				if p != p2:
 					o = p.is_opponent_in_range(p2)
-					observations[p].append(o)
+					observations[p].append(o) # appending observation about ENEMY_IN_SIGHT
 					if o != Observation.ENEMY_NOT_SIGHT:
-						dist = p.get_distance_with(p2)
+						dist = p.get_distance_with(p2) # deciding to append ENEMY_NEAR or ENEMY_FAR
 						if dist < DISTANCE_THRESHOLD:
 							observations[p].append(Observation.ENEMY_NEAR)
 						else:
 							observations[p].append(Observation.ENEMY_FAR)
-							rewards[p] += REWARD_ENEMY_FAR
 					for b in self.bullets[p2]:
-						obs_pos = p.is_bullet_in_range(b)
-						obs_dir = p.is_bullet_in_direction(b)
-						#print(obs_pos)
-						if obs_pos != Observation.BULLET_NOT_SIGHT:
-							observations[p].append(obs_pos)
-							observations[p].append(obs_dir)
-							if obs_dir == Observation.BULLET_DIRECTION_AGAINST:
-								rewards[p] += REWARD_BULLET_DIRECTION_AGAINST
-							dist = p.get_distance_with(b)
-							if dist < DISTANCE_THRESHOLD:
-								#print(Observation.BULLET_NEAR)
-								observations[p].append(Observation.BULLET_NEAR)
-							else:
-								#print(Observation.BULLET_FAR)
-								observations[p].append(Observation.BULLET_FAR)
-
-							#if obs_pos == Observation.BULLET_INNER_SIGHT:
-							#	rewards[p] += REWARD_BULLET_SIGHT_INNER
-							#if obs_pos == Observation.BULLET_OUTER_LEFT_SIGHT or obs_pos == Observation.BULLET_OUTER_RIGHT_SIGHT:
-							#	rewards[p] += REWARD_BULLET_SIGHT_OUTER
-			is_touching_a_wall = False
+						bul_pos = p.is_bullet_in_range(b) # finding position of such bullet
+						#if bul_pos != Observation.BULLET_NOT_SIGHT: # if the player sees the bullet, add observations
+						observations[p].append(bul_pos)
+						bul_dir = p.is_bullet_in_direction(b) # finding direction of such bullet
+						observations[p].append(bul_dir)
+						if bul_dir != Observation.BULLET_DIRECTION_AGAINST: # reward for bullet not going towards the player
+							rewards[p] += REWARD_BULLET_DIRECTION_AWAY
+						dist = p.get_distance_with(b) # deciding to append BULLET_NEAR or BULLET_FAR
+						if dist < DISTANCE_THRESHOLD:
+							observations[p].append(Observation.BULLET_NEAR)
+						else:
+							observations[p].append(Observation.BULLET_FAR)
+						if bul_pos == Observation.BULLET_INNER_SIGHT: # deciding to add reward REWARD_BULLET_SIGHT_INNER or REWARD_BULLET_SIGHT_OUTER or nothing
+							rewards[p] += REWARD_BULLET_SIGHT_INNER
+						if bul_pos == Observation.BULLET_OUTER_LEFT_SIGHT or bul_pos == Observation.BULLET_OUTER_RIGHT_SIGHT:
+							rewards[p] += REWARD_BULLET_SIGHT_OUTER
+			is_touching_a_wall = False # useful for reward REWARD_WALL
 			if p.is_touching_wall(WALL_DIRECTION_RIGHT):
 				is_touching_a_wall = True
 				observations[p].append(Observation.WALL_RIGHT)
@@ -167,6 +160,9 @@ class Game:
 						# Add a reward point to player p
 						rewards[p] += REWARD_HIT_POSITIVE
 						rewards[p2] += REWARD_HIT_NEGATIVE
+
+						# If bullet remove, go to next bullet
+						break
 
 		# add rewards for enemy in sight
 		for p in self.players:

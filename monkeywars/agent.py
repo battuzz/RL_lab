@@ -89,6 +89,8 @@ class PlayerAgent(Agent):
 		return Actions.PASS
 
 class PlayerQLearningAgent(PlayerAgent):
+	""" stdrew is the reward given to the actions taken by the agent when under control of
+		the user, so that it learns his/her movements """
 	def __init__(self, alpha=0.1, gamma=0.3, policy=EGreedyPolicy(epsilon=0.05), learn = True, stdrew = 0.1):
 		super().__init__()
 
@@ -169,11 +171,6 @@ class EscapeAgent(Agent):
 
 	def act(self, observation, reward, done, action_space):
 		ret = None
-		# if Observation.WALL in observation:
-		# 	ret = Actions.ROTATE_CLOCKWISE
-		# else:
-		# 	ret = Actions.MOVE
-		# return ret
 
 		if self.state < 20:
 			ret = Actions.MOVE
@@ -217,16 +214,6 @@ class SARSALearningAgent(Agent):
 	def __repr__(self):
 		return self.sarsa.__repr__()
 
-	# def save_state(self, name):
-	# 	with open(os.path.join("models/", name), "wb") as f:
-	# 		pickle.dump(self.sarsa, f)
-
-	# def load_state(self, name):
-	# 	try:
-	# 		with open(os.path.join("models/", name), "rb") as f:
-	# 			self.sarsa = pickle.load(f)
-	# 	except Exception as e:
-	# 		pass
 
 class QLearningAgent(Agent):
 	def __init__(self, alpha=0.1, gamma=0.3, policy=EGreedyPolicy(epsilon=0.05), learn = True):
@@ -250,15 +237,5 @@ class QLearningAgent(Agent):
 
 		return self.previous_action
 
-	# def save_state(self, name):
-	# 	with open(os.path.join("models/", name), "wb") as f:
-	# 		pickle.dump(self.Q, f)
-
-	# def load_state(self, name):
-	# 	try:
-	# 		with open(os.path.join("models/", name), "rb") as f:
-	# 			self.Q = pickle.load(f)
-	# 	except Exception as e:
-	# 		pass
 
 

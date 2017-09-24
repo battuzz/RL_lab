@@ -1,42 +1,50 @@
 from enum import Enum
 
-INNER_FIELD_ANGLE = 3
-OUTER_FIELD_ANGLE = 50
-VISION_FIELD_ANGLE = 180
-DISTANCE_THRESHOLD = 300
-
-DEPTH_VISION = 600
-
+""" Field and graphics """
 SIZE = WIDTH, HEIGHT = 800, 600
-BOX_PROPORTION = 1
-
-MOVE_STEP = 4
-ROTATION_STEP = 2
-
-BULLET_STEP = 6
-FIRE_DELAY = 150
-BULLET_ANGLE_SIGHT = 60
-
+BOX_PROPORTION = 0.35
 BACKGROUND_COLOR = 255,255,255
+DEPTH_VISION = 600 # Used only for graphics 
 
-""" Used in player.is_touching_wall, they are just a #define """
+""" Used in player.is_touching_wall, they are used as an enum, but I was too lazy to
+	create an enum. Do not change! """
 WALL_DIRECTION_RIGHT = 1
 WALL_DIRECTION_LEFT = 2
 
+""" Agents: basic """
+PLAYER_RADIUS = 30
+MOVE_STEP = 4
+ROTATION_STEP = 4
+FIRE_DELAY = 150
+
+""" Agents: Fields of vision """
+INNER_FIELD = PLAYER_RADIUS*2 # the diameter of the rectangle that defines the inner vision field
+OUTER_FIELD_ANGLE = 50 # an angle in degrees
+VISION_FIELD_ANGLE = 180 # an angle in degrees
+DISTANCE_THRESHOLD = 300 # threashold distance between ENEMY_NEAR and ENEMY_FAR
+
+""" Agents and walls """
 WALL_SIGHT_ANGLE = 180 # in [0,180]
 WALL_SIGHT_NUM_RAYS = 5 # must be at least 2
 WALL_SENSITIVITY = 100 # the maximum distance between player and wall that activates the WALL observations
 
-REWARD_STANDARD = 0
-REWARD_HIT_POSITIVE = 0
-REWARD_HIT_NEGATIVE = 0
-REWARD_ENEMY_SIGHT_OUTER = 0
-REWARD_ENEMY_SIGHT_INNER = 0
-REWARD_BULLET_DIRECTION_AGAINST = 0
-REWARD_ENEMY_FAR = 0
-REWARD_WALL = 0.01
+""" Bullets """
+BULLET_STEP = 6
+BULLET_ANGLE_SIGHT = 60 # used to decide between BULLET_DIRECTION_AWAY and BULLET_DIRECTION_RIGHT or BULLET_DIRECTION_LEFT
 
-SIMULATION_TIME = 1000
+""" Rewards """
+REWARD_STANDARD = 0 # activated at every step
+REWARD_HIT_POSITIVE = 100 # activated upon hitting an enemy
+REWARD_HIT_NEGATIVE = 0 # activated upon being hit by an enemy
+REWARD_ENEMY_SIGHT_OUTER = 1 # activated if the enemy is in OUTER_FIELD_ANGLE
+REWARD_ENEMY_SIGHT_INNER = 0 # activated if the enemy is in INNER_FIELD
+REWARD_BULLET_SIGHT_INNER = 0 # activated if the bullet is in BULLET_INNER_SIGHT
+REWARD_BULLET_SIGHT_OUTER = 0 # activated if the bullet is in BULLET_OUTER_LEFT_SIGHT or BULLET_OUTER_RIGHT_SIGHT
+REWARD_BULLET_DIRECTION_AWAY = 1 # activated if BULLET_DIRECTION_LEFT or BULLET_DIRECTION_RIGHT or BULLET_DIRECTION_AWAY
+REWARD_WALL = 0 # activated when the agent is near a wall (either left or right)
+
+""" Simulation """
+SIMULATION_TIME = 1000 # simulation steps that define an episode
 
 
 class Observation(Enum):
