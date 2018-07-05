@@ -15,10 +15,11 @@ WALL_DIRECTION_LEFT = 2
 PLAYER_RADIUS = 30
 MOVE_STEP = 4
 ROTATION_STEP = 4
-FIRE_DELAY = 150
+FIRE_DELAY = 30   #250
 
 """ Agents: Fields of vision """
 INNER_FIELD = PLAYER_RADIUS*2 # the diameter of the rectangle that defines the inner vision field
+INNER_FIELD_ANGLE = 4
 OUTER_FIELD_ANGLE = 50 # an angle in degrees
 VISION_FIELD_ANGLE = 180 # an angle in degrees
 DISTANCE_THRESHOLD = 300 # threashold distance between ENEMY_NEAR and ENEMY_FAR
@@ -29,13 +30,13 @@ WALL_SIGHT_NUM_RAYS = 5 # must be at least 2
 WALL_SENSITIVITY = 100 # the maximum distance between player and wall that activates the WALL observations
 
 """ Bullets """
-BULLET_STEP = 6
+BULLET_STEP = 15 #6
 BULLET_ANGLE_SIGHT = 60 # used to decide between BULLET_DIRECTION_AWAY and BULLET_DIRECTION_RIGHT or BULLET_DIRECTION_LEFT
 
 """ Rewards """
 REWARD_STANDARD = 0 # activated at every step
 REWARD_HIT_POSITIVE = 100 # activated upon hitting an enemy
-REWARD_HIT_NEGATIVE = 0 # activated upon being hit by an enemy
+REWARD_HIT_NEGATIVE = -10 # activated upon being hit by an enemy
 REWARD_ENEMY_SIGHT_OUTER = 1 # activated if the enemy is in OUTER_FIELD_ANGLE
 REWARD_ENEMY_SIGHT_INNER = 0 # activated if the enemy is in INNER_FIELD
 REWARD_BULLET_SIGHT_INNER = 0 # activated if the bullet is in BULLET_INNER_SIGHT
@@ -96,6 +97,11 @@ class Actions(Enum):
 	MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE = 7
 	FIRE = 8
 	PASS = 9
+
+	MOVE_UP = 10
+	MOVE_DOWN = 11
+	MOVE_RIGHT = 12
+	MOVE_LEFT = 13
 
 	def __repr__(self):
 		return self.name

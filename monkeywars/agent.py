@@ -4,9 +4,9 @@ import utils
 from constants import Observation, Actions
 from algorithms import *
 import pickle
-import pygame_sdl2
+import pygame
 
-class Agent:
+class Agent(object):
 	def act(self, observation, reward, done, action_space):
 		raise NotImplementedError()
 
@@ -92,17 +92,17 @@ class PlayerAgent(Agent):
 		direction = 0
 		fire = False
 
-		keys = pygame_sdl2.key.get_pressed()
+		keys = pygame.key.get_pressed()
 
-		if keys[pygame_sdl2.K_w]:
+		if keys[pygame.K_w]:
 			move = 1
-		elif keys[pygame_sdl2.K_s]:
+		elif keys[pygame.K_s]:
 			move = -1
-		if keys[pygame_sdl2.K_a]:
+		if keys[pygame.K_a]:
 			direction = -1
-		elif keys[pygame_sdl2.K_d]:
+		elif keys[pygame.K_d]:
 			direction = 1
-		if keys[pygame_sdl2.K_SPACE]:
+		if keys[pygame.K_SPACE]:
 			fire = True
 
 		if fire:
@@ -143,11 +143,11 @@ class PlayerQLearningAgent(PlayerAgent):
 		self.stdrew = stdrew
 
 	def act(self, observation, reward, done, action_space):
-		keys = pygame_sdl2.key.get_pressed()
+		keys = pygame.key.get_pressed()
 
 		# Press 'p' to get control over the agent. The agent will learn while you play.
 		# Press 'p' again to make it playing using its acquired intelligence (and keep learning...)
-		if keys[pygame_sdl2.K_p]:
+		if keys[pygame.K_p]:
 			self.controlled = not self.controlled
 
 		if self.controlled:

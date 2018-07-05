@@ -85,19 +85,19 @@ class Game:
 
 		# make players do actions
 		for p,a in zip(self.players, actions):
-			if a is Actions.MOVE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE:
+			if (a is Actions.MOVE) or (a is Actions.MOVE_AND_ROTATE_CLOCKWISE) or (a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE):
 				p.move(MOVE_STEP)
 
-			if a is Actions.MOVE_BACK or a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE:
+			if (a is Actions.MOVE_BACK) or (a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE) or (a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE):
 				p.move(-MOVE_STEP)
 			
-			if a is Actions.ROTATE_CLOCKWISE or a is Actions.MOVE_AND_ROTATE_CLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE:
+			if (a is Actions.ROTATE_CLOCKWISE) or (a is Actions.MOVE_AND_ROTATE_CLOCKWISE) or (a is Actions.MOVE_BACK_AND_ROTATE_CLOCKWISE):
 				p.rotate_clockwise(ROTATION_STEP)
 			
-			if a is Actions.ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE or a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE:
+			if (a is Actions.ROTATE_COUNTERCLOCKWISE) or (a is Actions.MOVE_AND_ROTATE_COUNTERCLOCKWISE) or (a is Actions.MOVE_BACK_AND_ROTATE_COUNTERCLOCKWISE):
 				p.rotate_counterclockwise(ROTATION_STEP)
 
-			if a is Actions.FIRE and self.last_shoot[p] >= FIRE_DELAY:
+			if (a is Actions.FIRE) and (self.last_shoot[p] >= FIRE_DELAY):
 				self.bullets[p].add(p.fire())
 				self.last_shoot[p] = 0
 

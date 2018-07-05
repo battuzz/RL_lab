@@ -1,5 +1,5 @@
 import math
-import pygame_sdl2
+import pygame
 import random
 
 def random_position_in_boundary(boundary):
