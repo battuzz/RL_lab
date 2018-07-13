@@ -5,6 +5,10 @@ from constants import Observation, Actions
 from algorithms import *
 import pickle
 import pygame
+from baselines.ppo1.mlp_policy import MlpPolicy
+from baselines.trpo_mpi import trpo_mpi
+import tensorflow as tf
+
 
 class Agent(object):
 	def act(self, observation, reward, done, action_space):
@@ -70,19 +74,28 @@ class RandomAgent(Agent):
 
 class ShooterAgent(Agent):
 	def act(self, observation, reward, done, action_space):
-		if Observation.ENEMY_OUTER_RIGHT_SIGHT in observation:
-			return Actions.ROTATE_CLOCKWISE
-
-		if Observation.ENEMY_OUTER_LEFT_SIGHT in observation:
+	
+		if (Observation.ENEMY_OUTER_LEFT_SIGHT in observation) or (Observation.ENEMY_VISION_LEFT_SIGHT in observation):
 			return Actions.ROTATE_COUNTERCLOCKWISE
-
-		if Observation.ENEMY_INNER_SIGHT in observation and Observation.FIRE_READY in observation:
+		elif (Observation.ENEMY_OUTER_RIGHT_SIGHT in observation) or (Observation.ENEMY_VISION_RIGHT_SIGHT in observation):
+			return Actions.ROTATE_CLOCKWISE
+		else:
+			return Actions.FIRE
+	
+	def act2(self, observation, reward, done, action_space):
+		# xpos, ypos, angle, XPOS, YPOS, ANGLE, BX, BY, fire
+		xpos, ypos, angle, XPOS, YPOS, ANGLE, BX, BY, fire = observation
+		
+		opponent_angle = utils.get_angle((XPOS - xpos, YPOS - ypos))
+		angle_diff = utils.angle_distance(angle, opponent_angle)
+		
+		if angle_diff >= INNER_FIELD_ANGLE/2:
+			return Actions.ROTATE_COUNTERCLOCKWISE
+		elif angle_diff < -INNER_FIELD_ANGLE/2:
+			return Actions.ROTATE_CLOCKWISE
+		else:
 			return Actions.FIRE
 
-		if Observation.ENEMY_INNER_SIGHT in observation and Observation.FIRE_READY not in observation:
-			return Actions.PASS
-
-		return Actions.ROTATE_CLOCKWISE
 	def __str__(self):
 		return "ShooterAgent"
 
@@ -260,3 +273,26 @@ class LearningAgent(Agent):
 
 	def __str__(self):
 		return str(self.learning_algorithm)
+
+
+class TrpoAgent(Agent):
+	def __init__(self, model_name, ob_space, ac_space):
+		self.pi = MlpPolicy(name='pi', ob_space=ob_space, ac_space=ac_space,
+				hid_size=64, num_hid_layers=2)
+		
+		self.oldpi = MlpPolicy(name='oldpi', ob_space=ob_space, ac_space=ac_space,
+				hid_size=64, num_hid_layers=2)
+		
+		saver = tf.train.Saver()
+		self._sess = tf.Session()
+		self._sess.__enter__()
+
+		self._sess.run(tf.global_variables_initializer())
+		self._sess.run(tf.local_variables_initializer())
+
+		saver.restore(self._sess, "./mymodel")
+
+		self._stochastic = tf.Variable(False, dtype=tf.bool)
+	
+	def act(self, observation, reward, done, action_space):
+		return self.pi.act(self._stochastic, observation)[0]

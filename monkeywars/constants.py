@@ -35,8 +35,8 @@ BULLET_ANGLE_SIGHT = 60 # used to decide between BULLET_DIRECTION_AWAY and BULLE
 
 """ Rewards """
 REWARD_STANDARD = 0 # activated at every step
-REWARD_HIT_POSITIVE = 100 # activated upon hitting an enemy
-REWARD_HIT_NEGATIVE = -10 # activated upon being hit by an enemy
+REWARD_HIT_POSITIVE = 1 # activated upon hitting an enemy
+REWARD_HIT_NEGATIVE = -1 # activated upon being hit by an enemy
 REWARD_ENEMY_SIGHT_OUTER = 1 # activated if the enemy is in OUTER_FIELD_ANGLE
 REWARD_ENEMY_SIGHT_INNER = 0 # activated if the enemy is in INNER_FIELD
 REWARD_BULLET_SIGHT_INNER = 0 # activated if the bullet is in BULLET_INNER_SIGHT
@@ -78,6 +78,9 @@ class Observation(Enum):
 	ENEMY_FAR = 20
 	BULLET_NEAR = 21
 	BULLET_FAR = 22
+
+	WILL_HIT_BY_BULLET = 23
+	WILL_NOT_HIT_BY_BULLET = 24
 
 	def __repr__(self):
 		return self.name

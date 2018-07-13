@@ -27,7 +27,6 @@ class Monkeywars(object):
 
         if self.graphic_mode:
             self.screen = self._initialize_graphic()
-            pygame.init()
 
 
     def _initialize_board(self):
@@ -98,10 +97,24 @@ class Monkeywars(object):
                     o = p.is_opponent_in_range(p2)
                     observations[p].append(o)
 
+                    closest_bullet = None
+                    closest_dist = np.inf
+
                     for b in self.bullets[p2]:
-                        bul_pos = p.is_bullet_in_range(b) # finding position of such bullet
+                        d_to_b = p.get_distance_with(b)
+                        d_to_p = p.get_distance_with(p2)
+                        d_to_b2 = p2.get_distance_with(b)
+
+                        if (d_to_b < 1.5*PLAYER_RADIUS or (d_to_p < d_to_b2)) and (d_to_b < closest_dist):
+                            closest_dist = d_to_b
+                            closest_bullet = b
+                    
+                    if closest_bullet is not None:
+                        bul_pos = p.is_bullet_in_range(closest_bullet) # finding position of such bullet
                         
-                        observations[p].append(bul_pos)                    
+                        observations[p].append(bul_pos)
+
+                        observations[p].append(p.will_hit_by_bullet(closest_bullet))
 
         # check if some bullets hit a player. If so, add rewards
         for p in self.players:
@@ -210,4 +223,3 @@ class Monkeywars(object):
     
     def __str__(self):
         return 'Monkeywars env'
-

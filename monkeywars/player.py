@@ -72,14 +72,19 @@ class Player(object):
 				self.pos = utils.repositionate_inside_border(self.pos, self.boundary)
 	
 	def move_wasd(self, action):
+		perp_direction = (self.direction[1], -self.direction[0])
 		if action == Actions.MOVE_UP:
-			self.pos = (self.pos[0], self.pos[1] + MOVE_STEP)
+			#self.pos = (self.pos[0], self.pos[1] + MOVE_STEP)
+			self.pos = tuple(u+MOVE_STEP*d for u,d in zip(self.pos, self.direction))
 		if action == Actions.MOVE_DOWN:
-			self.pos = (self.pos[0], self.pos[1] - MOVE_STEP)
+			#self.pos = (self.pos[0], self.pos[1] - MOVE_STEP)
+			self.pos = tuple(u-MOVE_STEP*d for u,d in zip(self.pos, self.direction))
 		if action == Actions.MOVE_RIGHT:
-			self.pos = (self.pos[0] + MOVE_STEP, self.pos[1])
+			#self.pos = (self.pos[0] + MOVE_STEP, self.pos[1])
+			self.pos = tuple(u+MOVE_STEP*d for u,d in zip(self.pos, perp_direction))
 		if action == Actions.MOVE_LEFT:
-			self.pos = (self.pos[0] - MOVE_STEP, self.pos[1])
+			#self.pos = (self.pos[0] - MOVE_STEP, self.pos[1])
+			self.pos = tuple(u-MOVE_STEP*d for u,d in zip(self.pos, perp_direction))
 		
 		if self.boundary is not None:
 			# Check if the new position is outside of the border. If it is the case,
@@ -186,6 +191,27 @@ class Player(object):
 			return Observation.BULLET_DIRECTION_RIGHT
 
 		return Observation.BULLET_DIRECTION_AWAY
+	
+	def will_hit_by_bullet(self, bullet):
+		b_pos = bullet.get_pos()
+		b_dir = bullet.direction
+
+		x1,y1 = b_pos
+		x2,y2 = (x+10*dx for x,dx in zip(b_pos, b_dir))
+
+		a = y1-y2
+		b = x2-x1
+		c = x1*y2 - x2*y1
+
+		x0,y0 = self.pos
+
+		dist = abs(a*x0 + b*y0 + c) / math.sqrt(a*a + b*b)
+
+		if dist < self.radius + bullet.get_radius():
+			return Observation.WILL_HIT_BY_BULLET
+		else:
+			return Observation.WILL_NOT_HIT_BY_BULLET
+
 
 	def is_touching_wall(self, direction):
 		# direction = WALL_DIRECTION_RIGHT or WALL_DIRECTION_LEFT
